@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_ProductInitiation"
+                  targetNamespace="http://jtbank.cz/investment">
+  
+  <bpmn:collaboration id="Collaboration_ProductInitiation">
+    <bpmn:participant id="Pool_ProductInitiation" name="Product Initiation Process" processRef="Process_ProductInitiation"/>
+  </bpmn:collaboration>
+  
+  <bpmn:process id="Process_ProductInitiation" isExecutable="true">
+    <!-- Lane definitions -->
+    <bpmn:laneSet id="LaneSet_ProductInitiation">
+      <bpmn:lane id="Lane_Initiator" name="Initiator (Business Division/Markets/ONE)">
+        <bpmn:flowNodeRef>StartEvent_Request</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PrepareRequest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_SupplementInfo</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_ODIC" name="ODIC (Investment Center)">
+        <bpmn:flowNodeRef>Task_ReceiveRequest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AnalyzeRequest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Completeness</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ClassifyRequest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_RequestType</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PrepareProposal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AcceleratedProcessing</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_ToApproval</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_ToDistribution</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    
+    <!-- Flow nodes -->
+    <bpmn:startEvent id="StartEvent_Request" name="Product request identified">
+      <bpmn:outgoing>Flow_001</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:task id="Task_PrepareRequest" name="Prepare product initiation request">
+      <bpmn:incoming>Flow_001</bpmn:incoming>
+      <bpmn:outgoing>Flow_002</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_ReceiveRequest" name="Receive and archive request">
+      <bpmn:incoming>Flow_002</bpmn:incoming>
+      <bpmn:outgoing>Flow_003</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_AnalyzeRequest" name="Analyze request completeness">
+      <bpmn:incoming>Flow_003</bpmn:incoming>
+      <bpmn:outgoing>Flow_004</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:exclusiveGateway id="Gateway_Completeness" name="Request complete?">
+      <bpmn:incoming>Flow_004</bpmn:incoming>
+      <bpmn:outgoing>Flow_005_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_005_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:task id="Task_SupplementInfo" name="Supplement missing information">
+      <bpmn:incoming>Flow_005_No</bpmn:incoming>
+      <bpmn:outgoing>Flow_006</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_ClassifyRequest" name="Classify request type and complexity">
+      <bpmn:incoming>Flow_005_Yes</bpmn:incoming>
+      <bpmn:incoming>Flow_006</bpmn:incoming>
+      <bpmn:outgoing>Flow_007</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:exclusiveGateway id="Gateway_RequestType" name="Request type?">
+      <bpmn:incoming>Flow_007</bpmn:incoming>
+      <bpmn:outgoing>Flow_008_Standard</bpmn:outgoing>
+      <bpmn:outgoing>Flow_008_Accelerated</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:task id="Task_PrepareProposal" name="Prepare product proposal for VIN">
+      <bpmn:incoming>Flow_008_Standard</bpmn:incoming>
+      <bpmn:outgoing>Flow_009</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_AcceleratedProcessing" name="Process in accelerated regime">
+      <bpmn:incoming>Flow_008_Accelerated</bpmn:incoming>
+      <bpmn:outgoing>Flow_010</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:endEvent id="EndEvent_ToApproval" name="To approval process">
+      <bpmn:incoming>Flow_009</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <bpmn:endEvent id="EndEvent_ToDistribution" name="To distribution">
+      <bpmn:incoming>Flow_010</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence flows -->
+    <bpmn:sequenceFlow id="Flow_001" sourceRef="StartEvent_Request" targetRef="Task_PrepareRequest"/>
+    <bpmn:sequenceFlow id="Flow_002" sourceRef="Task_PrepareRequest" targetRef="Task_ReceiveRequest"/>
+    <bpmn:sequenceFlow id="Flow_003" sourceRef="Task_ReceiveRequest" targetRef="Task_AnalyzeRequest"/>
+    <bpmn:sequenceFlow id="Flow_004" sourceRef="Task_AnalyzeRequest" targetRef="Gateway_Completeness"/>
+    <bpmn:sequenceFlow id="Flow_005_Yes" name="Yes" sourceRef="Gateway_Completeness" targetRef="Task_ClassifyRequest"/>
+    <bpmn:sequenceFlow id="Flow_005_No" name="No" sourceRef="Gateway_Completeness" targetRef="Task_SupplementInfo"/>
+    <bpmn:sequenceFlow id="Flow_006" sourceRef="Task_SupplementInfo" targetRef="Task_ClassifyRequest"/>
+    <bpmn:sequenceFlow id="Flow_007" sourceRef="Task_ClassifyRequest" targetRef="Gateway_RequestType"/>
+    <bpmn:sequenceFlow id="Flow_008_Standard" name="Standard" sourceRef="Gateway_RequestType" targetRef="Task_PrepareProposal"/>
+    <bpmn:sequenceFlow id="Flow_008_Accelerated" name="Accelerated" sourceRef="Gateway_RequestType" targetRef="Task_AcceleratedProcessing"/>
+    <bpmn:sequenceFlow id="Flow_009" sourceRef="Task_PrepareProposal" targetRef="EndEvent_ToApproval"/>
+    <bpmn:sequenceFlow id="Flow_010" sourceRef="Task_AcceleratedProcessing" targetRef="EndEvent_ToDistribution"/>
+  </bpmn:process>
+  
+  <!-- DI Layout -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ProductInitiation">
+    <bpmndi:BPMNPlane id="BPMNPlane_ProductInitiation" bpmnElement="Collaboration_ProductInitiation">
+      <bpmndi:BPMNShape id="Pool_ProductInitiation_di" bpmnElement="Pool_ProductInitiation" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1400" height="320"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_Initiator_di" bpmnElement="Lane_Initiator" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="1370" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_ODIC_di" bpmnElement="Lane_ODIC" isHorizontal="true">
+        <dc:Bounds x="190" y="230" width="1370" height="170"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Initiator lane elements -->
+      <bpmndi:BPMNShape id="StartEvent_Request_di" bpmnElement="StartEvent_Request">
+        <dc:Bounds x="220" y="140" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="183" width="76" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_PrepareRequest_di" bpmnElement="Task_PrepareRequest">
+        <dc:Bounds x="320" y="118" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_SupplementInfo_di" bpmnElement="Task_SupplementInfo">
+        <dc:Bounds x="760" y="118" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- ODIC lane elements -->
+      <bpmndi:BPMNShape id="Task_ReceiveRequest_di" bpmnElement="Task_ReceiveRequest">
+        <dc:Bounds x="320" y="270" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_AnalyzeRequest_di" bpmnElement="Task_AnalyzeRequest">
+        <dc:Bounds x="480" y="270" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Gateway_Completeness_di" bpmnElement="Gateway_Completeness" isMarkerVisible="true">
+        <dc:Bounds x="640" y="285" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="622" y="342" width="87" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_ClassifyRequest_di" bpmnElement="Task_ClassifyRequest">
+        <dc:Bounds x="920" y="270" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Gateway_RequestType_di" bpmnElement="Gateway_RequestType" isMarkerVisible="true">
+        <dc:Bounds x="1080" y="285" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1069" y="342" width="72" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_PrepareProposal_di" bpmnElement="Task_PrepareProposal">
+        <dc:Bounds x="1200" y="270" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_AcceleratedProcessing_di" bpmnElement="Task_AcceleratedProcessing">
+        <dc:Bounds x="1200" y="160" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_ToApproval_di" bpmnElement="EndEvent_ToApproval">
+        <dc:Bounds x="1420" y="292" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1408" y="335" width="60" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_ToDistribution_di" bpmnElement="EndEvent_ToDistribution">
+        <dc:Bounds x="1420" y="182" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1404" y="225" width="68" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence flows -->
+      <bpmndi:BPMNEdge id="Flow_001_di" bpmnElement="Flow_001">
+        <di:waypoint x="256" y="158"/>
+        <di:waypoint x="320" y="158"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_002_di" bpmnElement="Flow_002">
+        <di:waypoint x="370" y="198"/>
+        <di:waypoint x="370" y="270"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_003_di" bpmnElement="Flow_003">
+        <di:waypoint x="420" y="310"/>
+        <di:waypoint x="480" y="310"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_004_di" bpmnElement="Flow_004">
+        <di:waypoint x="580" y="310"/>
+        <di:waypoint x="640" y="310"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_005_Yes_di" bpmnElement="Flow_005_Yes">
+        <di:waypoint x="690" y="310"/>
+        <di:waypoint x="920" y="310"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="796" y="292" width="18" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_005_No_di" bpmnElement="Flow_005_No">
+        <di:waypoint x="665" y="285"/>
+        <di:waypoint x="665" y="158"/>
+        <di:waypoint x="760" y="158"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="673" y="219" width="15" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_006_di" bpmnElement="Flow_006">
+        <di:waypoint x="860" y="158"/>
+        <di:waypoint x="970" y="158"/>
+        <di:waypoint x="970" y="270"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_007_di" bpmnElement="Flow_007">
+        <di:waypoint x="1020" y="310"/>
+        <di:waypoint x="1080" y="310"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_008_Standard_di" bpmnElement="Flow_008_Standard">
+        <di:waypoint x="1130" y="310"/>
+        <di:waypoint x="1200" y="310"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1142" y="292" width="46" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_008_Accelerated_di" bpmnElement="Flow_008_Accelerated">
+        <di:waypoint x="1105" y="285"/>
+        <di:waypoint x="1105" y="200"/>
+        <di:waypoint x="1200" y="200"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1088" y="240" width="60" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_009_di" bpmnElement="Flow_009">
+        <di:waypoint x="1300" y="310"/>
+        <di:waypoint x="1420" y="310"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_010_di" bpmnElement="Flow_010">
+        <di:waypoint x="1300" y="200"/>
+        <di:waypoint x="1420" y="200"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
