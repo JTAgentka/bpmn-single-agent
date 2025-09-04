@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_ProductApproval"
+                  targetNamespace="http://jtbank.cz/investment">
+  
+  <bpmn:collaboration id="Collaboration_ProductApproval">
+    <bpmn:participant id="Participant_Approval" name="Investment Product Approval Process" processRef="Process_Approval"/>
+  </bpmn:collaboration>
+  
+  <bpmn:process id="Process_Approval" isExecutable="true">
+    
+    <bpmn:laneSet id="LaneSet_Approval">
+      <bpmn:lane id="Lane_Requestor" name="Klient">
+        <bpmn:flowNodeRef>StartEvent_Proposal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ReceiveDecision</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Approved</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Rejected</bpmn:flowNodeRef>
+      </bpmn:lane>
+      
+      <bpmn:lane id="Lane_System" name="JT Bank Systém">
+        <bpmn:flowNodeRef>Task_ValidateProposal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RiskAssessment</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ComplianceCheck</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RecordDecision</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ParallelGateway_Start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ParallelGateway_End</bpmn:flowNodeRef>
+      </bpmn:lane>
+      
+      <bpmn:lane id="Lane_Committee" name="Bankéř">
+        <bpmn:flowNodeRef>Task_VINReview</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Decision</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RequestModification</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Proposal" name="Product proposal submitted">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- System Tasks -->
+    <bpmn:serviceTask id="Task_ValidateProposal" name="Validate proposal completeness">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:parallelGateway id="ParallelGateway_Start">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3a</bpmn:outgoing>
+      <bpmn:outgoing>Flow_3b</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    
+    <bpmn:serviceTask id="Task_RiskAssessment" name="Perform risk assessment">
+      <bpmn:incoming>Flow_3a</bpmn:incoming>
+      <bpmn:outgoing>Flow_4a</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:serviceTask id="Task_ComplianceCheck" name="Execute compliance verification">
+      <bpmn:incoming>Flow_3b</bpmn:incoming>
+      <bpmn:outgoing>Flow_4b</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:parallelGateway id="ParallelGateway_End">
+      <bpmn:incoming>Flow_4a</bpmn:incoming>
+      <bpmn:incoming>Flow_4b</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    
+    <!-- Committee Tasks -->
+    <bpmn:manualTask id="Task_VINReview" name="VIN committee review">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:manualTask>
+    
+    <bpmn:exclusiveGateway id="Gateway_Decision" name="Approval decision?">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7_Approved</bpmn:outgoing>
+      <bpmn:outgoing>Flow_7_Rejected</bpmn:outgoing>
+      <bpmn:outgoing>Flow_7_Modify</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:manualTask id="Task_RequestModification" name="Request proposal modifications">
+      <bpmn:incoming>Flow_7_Modify</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:manualTask>
+    
+    <bpmn:serviceTask id="Task_RecordDecision" name="Record decision in system">
+      <bpmn:incoming>Flow_7_Approved</bpmn:incoming>
+      <bpmn:incoming>Flow_7_Rejected</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- User Tasks -->
+    <bpmn:userTask id="Task_ReceiveDecision" name="Receive approval decision">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10_Approved</bpmn:outgoing>
+      <bpmn:outgoing>Flow_10_Rejected</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Events -->
+    <bpmn:endEvent id="EndEvent_Approved" name="Product approved">
+      <bpmn:incoming>Flow_10_Approved</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <bpmn:endEvent id="EndEvent_Rejected" name="Product rejected">
+      <bpmn:incoming>Flow_10_Rejected</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows -->
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Proposal" targetRef="Task_ValidateProposal"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_ValidateProposal" targetRef="ParallelGateway_Start"/>
+    <bpmn:sequenceFlow id="Flow_3a" sourceRef="ParallelGateway_Start" targetRef="Task_RiskAssessment"/>
+    <bpmn:sequenceFlow id="Flow_3b" sourceRef="ParallelGateway_Start" targetRef="Task_ComplianceCheck"/>
+    <bpmn:sequenceFlow id="Flow_4a" sourceRef="Task_RiskAssessment" targetRef="ParallelGateway_End"/>
+    <bpmn:sequenceFlow id="Flow_4b" sourceRef="Task_ComplianceCheck" targetRef="ParallelGateway_End"/>
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="ParallelGateway_End" targetRef="Task_VINReview"/>
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_VINReview" targetRef="Gateway_Decision"/>
+    <bpmn:sequenceFlow id="Flow_7_Approved" name="Approved" sourceRef="Gateway_Decision" targetRef="Task_RecordDecision"/>
+    <bpmn:sequenceFlow id="Flow_7_Rejected" name="Rejected" sourceRef="Gateway_Decision" targetRef="Task_RecordDecision"/>
+    <bpmn:sequenceFlow id="Flow_7_Modify" name="Modify" sourceRef="Gateway_Decision" targetRef="Task_RequestModification"/>
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_RequestModification" targetRef="Task_VINReview"/>
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_RecordDecision" targetRef="Task_ReceiveDecision"/>
+    <bpmn:sequenceFlow id="Flow_10_Approved" sourceRef="Task_ReceiveDecision" targetRef="EndEvent_Approved"/>
+    <bpmn:sequenceFlow id="Flow_10_Rejected" sourceRef="Task_ReceiveDecision" targetRef="EndEvent_Rejected"/>
+    
+  </bpmn:process>
+  
+  <!-- DI Information -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Approval">
+    <bpmndi:BPMNPlane id="BPMNPlane_Approval" bpmnElement="Collaboration_ProductApproval">
+      
+      <!-- Pool -->
+      <bpmndi:BPMNShape id="Participant_Approval_di" bpmnElement="Participant_Approval" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1400" height="600"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Lanes -->
+      <bpmndi:BPMNShape id="Lane_Requestor_di" bpmnElement="Lane_Requestor" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="1370" height="200"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_System_di" bpmnElement="Lane_System" isHorizontal="true">
+        <dc:Bounds x="190" y="280" width="1370" height="200"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_Committee_di" bpmnElement="Lane_Committee" isHorizontal="true">
+        <dc:Bounds x="190" y="480" width="1370" height="200"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Start Event -->
+      <bpmndi:BPMNShape id="StartEvent_Proposal_di" bpmnElement="StartEvent_Proposal">
+        <dc:Bounds x="242" y="162" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="220" y="205" width="80" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- System Elements -->
+      <bpmndi:BPMNShape id="Task_ValidateProposal_di" bpmnElement="Task_ValidateProposal">
+        <dc:Bounds x="210" y="340" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="ParallelGateway_Start_di" bpmnElement="ParallelGateway_Start">
+        <dc:Bounds x="435" y="355" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_RiskAssessment_di" bpmnElement="Task_RiskAssessment">
+        <dc:Bounds x="550" y="290" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_ComplianceCheck_di" bpmnElement="Task_ComplianceCheck">
+        <dc:Bounds x="550" y="390" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="ParallelGateway_End_di" bpmnElement="ParallelGateway_End">
+        <dc:Bounds x="775" y="355" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Committee Elements -->
+      <bpmndi:BPMNShape id="Task_VINReview_di" bpmnElement="Task_VINReview">
+        <dc:Bounds x="720" y="540" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Gateway_Decision_di" bpmnElement="Gateway_Decision" isMarkerVisible="true">
+        <dc:Bounds x="945" y="555" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="925" y="612" width="90" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_RequestModification_di" bpmnElement="Task_RequestModification">
+        <dc:Bounds x="1060" y="540" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_RecordDecision_di" bpmnElement="Task_RecordDecision">
+        <dc:Bounds x="1060" y="340" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- User Elements -->
+      <bpmndi:BPMNShape id="Task_ReceiveDecision_di" bpmnElement="Task_ReceiveDecision">
+        <dc:Bounds x="1285" y="140" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- End Events -->
+      <bpmndi:BPMNShape id="EndEvent_Approved_di" bpmnElement="EndEvent_Approved">
+        <dc:Bounds x="1492" y="122" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1465" y="165" width="90" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Rejected_di" bpmnElement="EndEvent_Rejected">
+        <dc:Bounds x="1492" y="202" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1470" y="245" width="80" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence Flow Edges -->
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="260" y="198"/>
+        <di:waypoint x="260" y="340"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="370" y="380"/>
+        <di:waypoint x="435" y="380"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_3a_di" bpmnElement="Flow_3a">
+        <di:waypoint x="460" y="355"/>
+        <di:waypoint x="460" y="330"/>
+        <di:waypoint x="550" y="330"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_3b_di" bpmnElement="Flow_3b">
+        <di:waypoint x="460" y="405"/>
+        <di:waypoint x="460" y="430"/>
+        <di:waypoint x="550" y="430"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_4a_di" bpmnElement="Flow_4a">
+        <di:waypoint x="710" y="330"/>
+        <di:waypoint x="800" y="330"/>
+        <di:waypoint x="800" y="355"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_4b_di" bpmnElement="Flow_4b">
+        <di:waypoint x="710" y="430"/>
+        <di:waypoint x="800" y="430"/>
+        <di:waypoint x="800" y="405"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="800" y="405"/>
+        <di:waypoint x="800" y="540"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="880" y="580"/>
+        <di:waypoint x="945" y="580"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_7_Approved_di" bpmnElement="Flow_7_Approved">
+        <di:waypoint x="970" y="555"/>
+        <di:waypoint x="970" y="380"/>
+        <di:waypoint x="1060" y="380"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_7_Rejected_di" bpmnElement="Flow_7_Rejected">
+        <di:waypoint x="995" y="580"/>
+        <di:waypoint x="1140" y="580"/>
+        <di:waypoint x="1140" y="420"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_7_Modify_di" bpmnElement="Flow_7_Modify">
+        <di:waypoint x="995" y="580"/>
+        <di:waypoint x="1060" y="580"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="1140" y="540"/>
+        <di:waypoint x="1140" y="500"/>
+        <di:waypoint x="800" y="500"/>
+        <di:waypoint x="800" y="540"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="1220" y="380"/>
+        <di:waypoint x="1365" y="380"/>
+        <di:waypoint x="1365" y="220"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_10_Approved_di" bpmnElement="Flow_10_Approved">
+        <di:waypoint x="1445" y="160"/>
+        <di:waypoint x="1492" y="140"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_10_Rejected_di" bpmnElement="Flow_10_Rejected">
+        <di:waypoint x="1445" y="200"/>
+        <di:waypoint x="1492" y="220"/>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  
+</bpmn:definitions>
