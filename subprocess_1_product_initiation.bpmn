@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_ProductInitiation"
+                  targetNamespace="http://jtbank.cz/investment">
+  
+  <bpmn:collaboration id="Collaboration_ProductInitiation">
+    <bpmn:participant id="Participant_ProductInit" name="Investment Product Initiation Process" processRef="Process_ProductInit"/>
+  </bpmn:collaboration>
+  
+  <bpmn:process id="Process_ProductInit" isExecutable="true">
+    
+    <bpmn:laneSet id="LaneSet_ProductInit">
+      <bpmn:lane id="Lane_Initiator" name="Klient">
+        <bpmn:flowNodeRef>StartEvent_Request</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_SubmitRequest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ProvideAdditional</bpmn:flowNodeRef>
+      </bpmn:lane>
+      
+      <bpmn:lane id="Lane_System" name="JT Bank Systém">
+        <bpmn:flowNodeRef>Task_AuthVerify</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_FastTrack</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RegisterRequest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_LogAudit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Registered</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_FastTrack</bpmn:flowNodeRef>
+      </bpmn:lane>
+      
+      <bpmn:lane id="Lane_Officer" name="Bankéř">
+        <bpmn:flowNodeRef>Task_AnalyzeRequest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Complete</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PrepareProposal</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent_Request" name="Product request initiated">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Tasks -->
+    <bpmn:userTask id="Task_SubmitRequest" name="Submit product implementation request">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:serviceTask id="Task_AuthVerify" name="Verify requestor authentication">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:manualTask id="Task_AnalyzeRequest" name="Analyze request completeness">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:manualTask>
+    
+    <bpmn:exclusiveGateway id="Gateway_Complete" name="Request complete?">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_5_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:userTask id="Task_ProvideAdditional" name="Provide additional information">
+      <bpmn:incoming>Flow_5_No</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:exclusiveGateway id="Gateway_FastTrack" name="Fast-track eligible?">
+      <bpmn:incoming>Flow_5_Yes</bpmn:incoming>
+      <bpmn:outgoing>Flow_7_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_7_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:manualTask id="Task_PrepareProposal" name="Prepare product proposal">
+      <bpmn:incoming>Flow_7_No</bpmn:incoming>
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:manualTask>
+    
+    <bpmn:serviceTask id="Task_RegisterRequest" name="Register request in system">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:serviceTask id="Task_LogAudit" name="Log to audit trail">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:incoming>Flow_7_Yes</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- End Events -->
+    <bpmn:endEvent id="EndEvent_Registered" name="Request registered">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <bpmn:endEvent id="EndEvent_FastTrack" name="Fast-track approved">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows -->
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Request" targetRef="Task_SubmitRequest"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_SubmitRequest" targetRef="Task_AuthVerify"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_AuthVerify" targetRef="Task_AnalyzeRequest"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_AnalyzeRequest" targetRef="Gateway_Complete"/>
+    <bpmn:sequenceFlow id="Flow_5_Yes" name="Yes" sourceRef="Gateway_Complete" targetRef="Gateway_FastTrack"/>
+    <bpmn:sequenceFlow id="Flow_5_No" name="No" sourceRef="Gateway_Complete" targetRef="Task_ProvideAdditional"/>
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_ProvideAdditional" targetRef="Task_PrepareProposal"/>
+    <bpmn:sequenceFlow id="Flow_7_Yes" name="Yes" sourceRef="Gateway_FastTrack" targetRef="Task_LogAudit"/>
+    <bpmn:sequenceFlow id="Flow_7_No" name="No" sourceRef="Gateway_FastTrack" targetRef="Task_PrepareProposal"/>
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_PrepareProposal" targetRef="Task_RegisterRequest"/>
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_RegisterRequest" targetRef="Task_LogAudit"/>
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Task_LogAudit" targetRef="EndEvent_Registered"/>
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Task_LogAudit" targetRef="EndEvent_FastTrack"/>
+    
+  </bpmn:process>
+  
+  <!-- DI Information -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ProductInit">
+    <bpmndi:BPMNPlane id="BPMNPlane_ProductInit" bpmnElement="Collaboration_ProductInitiation">
+      
+      <!-- Pool -->
+      <bpmndi:BPMNShape id="Participant_ProductInit_di" bpmnElement="Participant_ProductInit" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1200" height="600"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Lanes -->
+      <bpmndi:BPMNShape id="Lane_Initiator_di" bpmnElement="Lane_Initiator" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="1170" height="200"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_System_di" bpmnElement="Lane_System" isHorizontal="true">
+        <dc:Bounds x="190" y="280" width="1170" height="200"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_Officer_di" bpmnElement="Lane_Officer" isHorizontal="true">
+        <dc:Bounds x="190" y="480" width="1170" height="200"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Start Event -->
+      <bpmndi:BPMNShape id="StartEvent_Request_di" bpmnElement="StartEvent_Request">
+        <dc:Bounds x="242" y="162" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="224" y="205" width="72" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Tasks and Activities -->
+      <bpmndi:BPMNShape id="Task_SubmitRequest_di" bpmnElement="Task_SubmitRequest">
+        <dc:Bounds x="330" y="140" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_AuthVerify_di" bpmnElement="Task_AuthVerify">
+        <dc:Bounds x="330" y="340" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_AnalyzeRequest_di" bpmnElement="Task_AnalyzeRequest">
+        <dc:Bounds x="330" y="540" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Gateway_Complete_di" bpmnElement="Gateway_Complete" isMarkerVisible="true">
+        <dc:Bounds x="555" y="555" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="535" y="612" width="90" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_ProvideAdditional_di" bpmnElement="Task_ProvideAdditional">
+        <dc:Bounds x="670" y="140" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Gateway_FastTrack_di" bpmnElement="Gateway_FastTrack" isMarkerVisible="true">
+        <dc:Bounds x="555" y="355" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="535" y="325" width="90" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_PrepareProposal_di" bpmnElement="Task_PrepareProposal">
+        <dc:Bounds x="670" y="540" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_RegisterRequest_di" bpmnElement="Task_RegisterRequest">
+        <dc:Bounds x="900" y="340" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_LogAudit_di" bpmnElement="Task_LogAudit">
+        <dc:Bounds x="1130" y="340" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- End Events -->
+      <bpmndi:BPMNShape id="EndEvent_Registered_di" bpmnElement="EndEvent_Registered">
+        <dc:Bounds x="1162" y="462" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1135" y="505" width="90" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_FastTrack_di" bpmnElement="EndEvent_FastTrack">
+        <dc:Bounds x="1262" y="362" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1240" y="405" width="80" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence Flow Edges -->
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="278" y="180"/>
+        <di:waypoint x="330" y="180"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="410" y="220"/>
+        <di:waypoint x="410" y="340"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="410" y="420"/>
+        <di:waypoint x="410" y="540"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="490" y="580"/>
+        <di:waypoint x="555" y="580"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_5_Yes_di" bpmnElement="Flow_5_Yes">
+        <di:waypoint x="580" y="555"/>
+        <di:waypoint x="580" y="405"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_5_No_di" bpmnElement="Flow_5_No">
+        <di:waypoint x="605" y="580"/>
+        <di:waypoint x="750" y="580"/>
+        <di:waypoint x="750" y="220"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="750" y="220"/>
+        <di:waypoint x="750" y="540"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_7_Yes_di" bpmnElement="Flow_7_Yes">
+        <di:waypoint x="605" y="380"/>
+        <di:waypoint x="1130" y="380"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_7_No_di" bpmnElement="Flow_7_No">
+        <di:waypoint x="580" y="405"/>
+        <di:waypoint x="580" y="580"/>
+        <di:waypoint x="670" y="580"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="830" y="580"/>
+        <di:waypoint x="980" y="580"/>
+        <di:waypoint x="980" y="420"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="1060" y="380"/>
+        <di:waypoint x="1130" y="380"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="1180" y="420"/>
+        <di:waypoint x="1180" y="462"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="1210" y="380"/>
+        <di:waypoint x="1262" y="380"/>
+      </bpmndi:BPMNEdge>
+      
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  
+</bpmn:definitions>
