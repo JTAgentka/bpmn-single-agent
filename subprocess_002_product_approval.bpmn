@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_ProductApproval"
+                  targetNamespace="http://jtbank.cz/investment">
+  
+  <bpmn:collaboration id="Collaboration_ProductApproval">
+    <bpmn:participant id="Pool_ProductApproval" name="Product Approval Process" processRef="Process_ProductApproval"/>
+  </bpmn:collaboration>
+  
+  <bpmn:process id="Process_ProductApproval" isExecutable="true">
+    <!-- Lane definitions -->
+    <bpmn:laneSet id="LaneSet_ProductApproval">
+      <bpmn:lane id="Lane_ODIC" name="ODIC (Investment Center)">
+        <bpmn:flowNodeRef>StartEvent_ApprovalRequest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PrepareDocumentation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_DocumentDecision</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PrepareFeasibilityStudy</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Approved</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Rejected</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Research" name="Research Department">
+        <bpmn:flowNodeRef>Task_AnalyzeProduct</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_AnalysisRequired</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_VIN" name="VIN Committee">
+        <bpmn:flowNodeRef>Task_ReviewProposal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ApprovalDecision</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_SetConditions</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    
+    <!-- Flow nodes -->
+    <bpmn:startEvent id="StartEvent_ApprovalRequest" name="Approval process initiated">
+      <bpmn:outgoing>Flow_001</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:task id="Task_PrepareDocumentation" name="Prepare approval documentation">
+      <bpmn:incoming>Flow_001</bpmn:incoming>
+      <bpmn:outgoing>Flow_002</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:exclusiveGateway id="Gateway_AnalysisRequired" name="Analysis required?">
+      <bpmn:incoming>Flow_002</bpmn:incoming>
+      <bpmn:outgoing>Flow_003_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_003_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:task id="Task_AnalyzeProduct" name="Analyze product (credit, market, investment)">
+      <bpmn:incoming>Flow_003_Yes</bpmn:incoming>
+      <bpmn:outgoing>Flow_004</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_ReviewProposal" name="Review product proposal">
+      <bpmn:incoming>Flow_003_No</bpmn:incoming>
+      <bpmn:incoming>Flow_004</bpmn:incoming>
+      <bpmn:incoming>Flow_009</bpmn:incoming>
+      <bpmn:outgoing>Flow_005</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:exclusiveGateway id="Gateway_ApprovalDecision" name="Approval decision?">
+      <bpmn:incoming>Flow_005</bpmn:incoming>
+      <bpmn:outgoing>Flow_006_Approved</bpmn:outgoing>
+      <bpmn:outgoing>Flow_006_Rejected</bpmn:outgoing>
+      <bpmn:outgoing>Flow_006_Study</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:task id="Task_SetConditions" name="Set implementation conditions">
+      <bpmn:incoming>Flow_006_Approved</bpmn:incoming>
+      <bpmn:outgoing>Flow_007</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_DocumentDecision" name="Document VIN decision">
+      <bpmn:incoming>Flow_007</bpmn:incoming>
+      <bpmn:incoming>Flow_006_Rejected</bpmn:incoming>
+      <bpmn:outgoing>Flow_008_Approved</bpmn:outgoing>
+      <bpmn:outgoing>Flow_008_Rejected</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_PrepareFeasibilityStudy" name="Prepare feasibility study">
+      <bpmn:incoming>Flow_006_Study</bpmn:incoming>
+      <bpmn:outgoing>Flow_009</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:endEvent id="EndEvent_Approved" name="Product approved">
+      <bpmn:incoming>Flow_008_Approved</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <bpmn:endEvent id="EndEvent_Rejected" name="Product rejected">
+      <bpmn:incoming>Flow_008_Rejected</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence flows -->
+    <bpmn:sequenceFlow id="Flow_001" sourceRef="StartEvent_ApprovalRequest" targetRef="Task_PrepareDocumentation"/>
+    <bpmn:sequenceFlow id="Flow_002" sourceRef="Task_PrepareDocumentation" targetRef="Gateway_AnalysisRequired"/>
+    <bpmn:sequenceFlow id="Flow_003_Yes" name="Complex product" sourceRef="Gateway_AnalysisRequired" targetRef="Task_AnalyzeProduct"/>
+    <bpmn:sequenceFlow id="Flow_003_No" name="Standard product" sourceRef="Gateway_AnalysisRequired" targetRef="Task_ReviewProposal"/>
+    <bpmn:sequenceFlow id="Flow_004" sourceRef="Task_AnalyzeProduct" targetRef="Task_ReviewProposal"/>
+    <bpmn:sequenceFlow id="Flow_005" sourceRef="Task_ReviewProposal" targetRef="Gateway_ApprovalDecision"/>
+    <bpmn:sequenceFlow id="Flow_006_Approved" name="Approved" sourceRef="Gateway_ApprovalDecision" targetRef="Task_SetConditions"/>
+    <bpmn:sequenceFlow id="Flow_006_Rejected" name="Rejected" sourceRef="Gateway_ApprovalDecision" targetRef="Task_DocumentDecision"/>
+    <bpmn:sequenceFlow id="Flow_006_Study" name="Study required" sourceRef="Gateway_ApprovalDecision" targetRef="Task_PrepareFeasibilityStudy"/>
+    <bpmn:sequenceFlow id="Flow_007" sourceRef="Task_SetConditions" targetRef="Task_DocumentDecision"/>
+    <bpmn:sequenceFlow id="Flow_008_Approved" sourceRef="Task_DocumentDecision" targetRef="EndEvent_Approved"/>
+    <bpmn:sequenceFlow id="Flow_008_Rejected" sourceRef="Task_DocumentDecision" targetRef="EndEvent_Rejected"/>
+    <bpmn:sequenceFlow id="Flow_009" sourceRef="Task_PrepareFeasibilityStudy" targetRef="Task_ReviewProposal"/>
+  </bpmn:process>
+  
+  <!-- DI Layout -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ProductApproval">
+    <bpmndi:BPMNPlane id="BPMNPlane_ProductApproval" bpmnElement="Collaboration_ProductApproval">
+      <bpmndi:BPMNShape id="Pool_ProductApproval_di" bpmnElement="Pool_ProductApproval" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1400" height="470"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_ODIC_di" bpmnElement="Lane_ODIC" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="1370" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_Research_di" bpmnElement="Lane_Research" isHorizontal="true">
+        <dc:Bounds x="190" y="230" width="1370" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_VIN_di" bpmnElement="Lane_VIN" isHorizontal="true">
+        <dc:Bounds x="190" y="380" width="1370" height="170"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- ODIC lane elements -->
+      <bpmndi:BPMNShape id="StartEvent_ApprovalRequest_di" bpmnElement="StartEvent_ApprovalRequest">
+        <dc:Bounds x="220" y="140" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="183" width="76" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_PrepareDocumentation_di" bpmnElement="Task_PrepareDocumentation">
+        <dc:Bounds x="320" y="118" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_DocumentDecision_di" bpmnElement="Task_DocumentDecision">
+        <dc:Bounds x="1200" y="118" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_PrepareFeasibilityStudy_di" bpmnElement="Task_PrepareFeasibilityStudy">
+        <dc:Bounds x="920" y="118" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Approved_di" bpmnElement="EndEvent_Approved">
+        <dc:Bounds x="1420" y="140" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1395" y="183" width="86" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Rejected_di" bpmnElement="EndEvent_Rejected">
+        <dc:Bounds x="1420" y="192" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1397" y="235" width="82" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Research lane elements -->
+      <bpmndi:BPMNShape id="Gateway_AnalysisRequired_di" bpmnElement="Gateway_AnalysisRequired" isMarkerVisible="true">
+        <dc:Bounds x="485" y="280" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="467" y="337" width="87" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_AnalyzeProduct_di" bpmnElement="Task_AnalyzeProduct">
+        <dc:Bounds x="600" y="265" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- VIN lane elements -->
+      <bpmndi:BPMNShape id="Task_ReviewProposal_di" bpmnElement="Task_ReviewProposal">
+        <dc:Bounds x="760" y="430" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Gateway_ApprovalDecision_di" bpmnElement="Gateway_ApprovalDecision" isMarkerVisible="true">
+        <dc:Bounds x="920" y="445" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="900" y="502" width="90" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_SetConditions_di" bpmnElement="Task_SetConditions">
+        <dc:Bounds x="1040" y="430" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence flows -->
+      <bpmndi:BPMNEdge id="Flow_001_di" bpmnElement="Flow_001">
+        <di:waypoint x="256" y="158"/>
+        <di:waypoint x="320" y="158"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_002_di" bpmnElement="Flow_002">
+        <di:waypoint x="420" y="158"/>
+        <di:waypoint x="510" y="158"/>
+        <di:waypoint x="510" y="280"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_003_Yes_di" bpmnElement="Flow_003_Yes">
+        <di:waypoint x="535" y="305"/>
+        <di:waypoint x="600" y="305"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="532" y="287" width="83" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_003_No_di" bpmnElement="Flow_003_No">
+        <di:waypoint x="510" y="330"/>
+        <di:waypoint x="510" y="470"/>
+        <di:waypoint x="760" y="470"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="486" y="397" width="88" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_004_di" bpmnElement="Flow_004">
+        <di:waypoint x="700" y="305"/>
+        <di:waypoint x="810" y="305"/>
+        <di:waypoint x="810" y="430"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_005_di" bpmnElement="Flow_005">
+        <di:waypoint x="860" y="470"/>
+        <di:waypoint x="920" y="470"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_006_Approved_di" bpmnElement="Flow_006_Approved">
+        <di:waypoint x="970" y="470"/>
+        <di:waypoint x="1040" y="470"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="981" y="452" width="48" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_006_Rejected_di" bpmnElement="Flow_006_Rejected">
+        <di:waypoint x="945" y="445"/>
+        <di:waypoint x="945" y="158"/>
+        <di:waypoint x="1200" y="158"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="941" y="299" width="45" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_006_Study_di" bpmnElement="Flow_006_Study">
+        <di:waypoint x="945" y="445"/>
+        <di:waypoint x="945" y="320"/>
+        <di:waypoint x="970" y="320"/>
+        <di:waypoint x="970" y="198"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="924" y="302" width="72" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_007_di" bpmnElement="Flow_007">
+        <di:waypoint x="1140" y="470"/>
+        <di:waypoint x="1250" y="470"/>
+        <di:waypoint x="1250" y="198"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_008_Approved_di" bpmnElement="Flow_008_Approved">
+        <di:waypoint x="1300" y="158"/>
+        <di:waypoint x="1420" y="158"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_008_Rejected_di" bpmnElement="Flow_008_Rejected">
+        <di:waypoint x="1300" y="178"/>
+        <di:waypoint x="1360" y="178"/>
+        <di:waypoint x="1360" y="210"/>
+        <di:waypoint x="1420" y="210"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_009_di" bpmnElement="Flow_009">
+        <di:waypoint x="920" y="158"/>
+        <di:waypoint x="810" y="158"/>
+        <di:waypoint x="810" y="430"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

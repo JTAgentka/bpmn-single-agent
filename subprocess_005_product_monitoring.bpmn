@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_ProductMonitoring"
+                  targetNamespace="http://jtbank.cz/investment">
+  
+  <bpmn:collaboration id="Collaboration_ProductMonitoring">
+    <bpmn:participant id="Pool_ProductMonitoring" name="Product Monitoring Process" processRef="Process_ProductMonitoring"/>
+  </bpmn:collaboration>
+  
+  <bpmn:process id="Process_ProductMonitoring" isExecutable="true">
+    <!-- Lane definitions -->
+    <bpmn:laneSet id="LaneSet_ProductMonitoring">
+      <bpmn:lane id="Lane_ODIC" name="ODIC (Investment Center)">
+        <bpmn:flowNodeRef>StartEvent_MonitoringCycle</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_MonitorEvents</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_EventSignificance</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AssessPerformance</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_UpdateKID</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ImplementActions</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_CycleComplete</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Compliance" name="Compliance (OCA)">
+        <bpmn:flowNodeRef>Task_RegulatoryReview</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ActionRequired</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_VIN" name="VIN Committee">
+        <bpmn:flowNodeRef>Task_ReportToVIN</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_DefineActions</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    
+    <!-- Flow nodes -->
+    <bpmn:startEvent id="StartEvent_MonitoringCycle" name="Monitoring cycle starts">
+      <bpmn:timerEventDefinition/>
+      <bpmn:outgoing>Flow_001</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:task id="Task_MonitorEvents" name="Monitor significant events">
+      <bpmn:incoming>Flow_001</bpmn:incoming>
+      <bpmn:outgoing>Flow_002</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:exclusiveGateway id="Gateway_EventSignificance" name="Significant event?">
+      <bpmn:incoming>Flow_002</bpmn:incoming>
+      <bpmn:outgoing>Flow_003_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_003_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:task id="Task_AssessPerformance" name="Assess product performance">
+      <bpmn:incoming>Flow_003_Yes</bpmn:incoming>
+      <bpmn:incoming>Flow_003_No</bpmn:incoming>
+      <bpmn:outgoing>Flow_004</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_RegulatoryReview" name="Perform regulatory compliance review">
+      <bpmn:incoming>Flow_004</bpmn:incoming>
+      <bpmn:outgoing>Flow_005</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:exclusiveGateway id="Gateway_ActionRequired" name="Action required?">
+      <bpmn:incoming>Flow_005</bpmn:incoming>
+      <bpmn:outgoing>Flow_006_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_006_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:task id="Task_ReportToVIN" name="Report findings to VIN">
+      <bpmn:incoming>Flow_006_Yes</bpmn:incoming>
+      <bpmn:outgoing>Flow_007</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_DefineActions" name="Define corrective actions">
+      <bpmn:incoming>Flow_007</bpmn:incoming>
+      <bpmn:outgoing>Flow_008</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_ImplementActions" name="Implement corrective actions">
+      <bpmn:incoming>Flow_008</bpmn:incoming>
+      <bpmn:outgoing>Flow_009</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_UpdateKID" name="Update KID and documentation">
+      <bpmn:incoming>Flow_006_No</bpmn:incoming>
+      <bpmn:incoming>Flow_009</bpmn:incoming>
+      <bpmn:outgoing>Flow_010</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:endEvent id="EndEvent_CycleComplete" name="Monitoring cycle complete">
+      <bpmn:incoming>Flow_010</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence flows -->
+    <bpmn:sequenceFlow id="Flow_001" sourceRef="StartEvent_MonitoringCycle" targetRef="Task_MonitorEvents"/>
+    <bpmn:sequenceFlow id="Flow_002" sourceRef="Task_MonitorEvents" targetRef="Gateway_EventSignificance"/>
+    <bpmn:sequenceFlow id="Flow_003_Yes" name="Yes" sourceRef="Gateway_EventSignificance" targetRef="Task_AssessPerformance"/>
+    <bpmn:sequenceFlow id="Flow_003_No" name="No" sourceRef="Gateway_EventSignificance" targetRef="Task_AssessPerformance"/>
+    <bpmn:sequenceFlow id="Flow_004" sourceRef="Task_AssessPerformance" targetRef="Task_RegulatoryReview"/>
+    <bpmn:sequenceFlow id="Flow_005" sourceRef="Task_RegulatoryReview" targetRef="Gateway_ActionRequired"/>
+    <bpmn:sequenceFlow id="Flow_006_Yes" name="Yes" sourceRef="Gateway_ActionRequired" targetRef="Task_ReportToVIN"/>
+    <bpmn:sequenceFlow id="Flow_006_No" name="No" sourceRef="Gateway_ActionRequired" targetRef="Task_UpdateKID"/>
+    <bpmn:sequenceFlow id="Flow_007" sourceRef="Task_ReportToVIN" targetRef="Task_DefineActions"/>
+    <bpmn:sequenceFlow id="Flow_008" sourceRef="Task_DefineActions" targetRef="Task_ImplementActions"/>
+    <bpmn:sequenceFlow id="Flow_009" sourceRef="Task_ImplementActions" targetRef="Task_UpdateKID"/>
+    <bpmn:sequenceFlow id="Flow_010" sourceRef="Task_UpdateKID" targetRef="EndEvent_CycleComplete"/>
+  </bpmn:process>
+  
+  <!-- DI Layout -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ProductMonitoring">
+    <bpmndi:BPMNPlane id="BPMNPlane_ProductMonitoring" bpmnElement="Collaboration_ProductMonitoring">
+      <bpmndi:BPMNShape id="Pool_ProductMonitoring_di" bpmnElement="Pool_ProductMonitoring" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1500" height="470"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_ODIC_di" bpmnElement="Lane_ODIC" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="1470" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_Compliance_di" bpmnElement="Lane_Compliance" isHorizontal="true">
+        <dc:Bounds x="190" y="230" width="1470" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_VIN_di" bpmnElement="Lane_VIN" isHorizontal="true">
+        <dc:Bounds x="190" y="380" width="1470" height="170"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- ODIC lane elements -->
+      <bpmndi:BPMNShape id="StartEvent_MonitoringCycle_di" bpmnElement="StartEvent_MonitoringCycle">
+        <dc:Bounds x="220" y="140" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="203" y="183" width="70" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_MonitorEvents_di" bpmnElement="Task_MonitorEvents">
+        <dc:Bounds x="320" y="118" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Gateway_EventSignificance_di" bpmnElement="Gateway_EventSignificance" isMarkerVisible="true">
+        <dc:Bounds x="480" y="133" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="459" y="190" width="92" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_AssessPerformance_di" bpmnElement="Task_AssessPerformance">
+        <dc:Bounds x="600" y="118" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_UpdateKID_di" bpmnElement="Task_UpdateKID">
+        <dc:Bounds x="1320" y="118" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_ImplementActions_di" bpmnElement="Task_ImplementActions">
+        <dc:Bounds x="1180" y="118" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_CycleComplete_di" bpmnElement="EndEvent_CycleComplete">
+        <dc:Bounds x="1520" y="140" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1502" y="183" width="72" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Compliance lane elements -->
+      <bpmndi:BPMNShape id="Task_RegulatoryReview_di" bpmnElement="Task_RegulatoryReview">
+        <dc:Bounds x="760" y="265" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Gateway_ActionRequired_di" bpmnElement="Gateway_ActionRequired" isMarkerVisible="true">
+        <dc:Bounds x="920" y="280" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="903" y="337" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- VIN lane elements -->
+      <bpmndi:BPMNShape id="Task_ReportToVIN_di" bpmnElement="Task_ReportToVIN">
+        <dc:Bounds x="1040" y="430" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_DefineActions_di" bpmnElement="Task_DefineActions">
+        <dc:Bounds x="1180" y="430" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence flows -->
+      <bpmndi:BPMNEdge id="Flow_001_di" bpmnElement="Flow_001">
+        <di:waypoint x="256" y="158"/>
+        <di:waypoint x="320" y="158"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_002_di" bpmnElement="Flow_002">
+        <di:waypoint x="420" y="158"/>
+        <di:waypoint x="480" y="158"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_003_Yes_di" bpmnElement="Flow_003_Yes">
+        <di:waypoint x="530" y="158"/>
+        <di:waypoint x="600" y="158"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="556" y="140" width="18" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_003_No_di" bpmnElement="Flow_003_No">
+        <di:waypoint x="505" y="133"/>
+        <di:waypoint x="505" y="100"/>
+        <di:waypoint x="650" y="100"/>
+        <di:waypoint x="650" y="118"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="570" y="82" width="15" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_004_di" bpmnElement="Flow_004">
+        <di:waypoint x="700" y="158"/>
+        <di:waypoint x="810" y="158"/>
+        <di:waypoint x="810" y="265"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_005_di" bpmnElement="Flow_005">
+        <di:waypoint x="860" y="305"/>
+        <di:waypoint x="920" y="305"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_006_Yes_di" bpmnElement="Flow_006_Yes">
+        <di:waypoint x="945" y="330"/>
+        <di:waypoint x="945" y="470"/>
+        <di:waypoint x="1040" y="470"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="951" y="397" width="18" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_006_No_di" bpmnElement="Flow_006_No">
+        <di:waypoint x="945" y="280"/>
+        <di:waypoint x="945" y="158"/>
+        <di:waypoint x="1320" y="158"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="953" y="217" width="15" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_007_di" bpmnElement="Flow_007">
+        <di:waypoint x="1140" y="470"/>
+        <di:waypoint x="1180" y="470"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_008_di" bpmnElement="Flow_008">
+        <di:waypoint x="1230" y="430"/>
+        <di:waypoint x="1230" y="198"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_009_di" bpmnElement="Flow_009">
+        <di:waypoint x="1280" y="158"/>
+        <di:waypoint x="1320" y="158"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_010_di" bpmnElement="Flow_010">
+        <di:waypoint x="1420" y="158"/>
+        <di:waypoint x="1520" y="158"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

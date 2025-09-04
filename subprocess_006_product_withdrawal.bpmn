@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_ProductWithdrawal"
+                  targetNamespace="http://jtbank.cz/investment">
+  
+  <bpmn:collaboration id="Collaboration_ProductWithdrawal">
+    <bpmn:participant id="Pool_ProductWithdrawal" name="Product Withdrawal Process" processRef="Process_ProductWithdrawal"/>
+  </bpmn:collaboration>
+  
+  <bpmn:process id="Process_ProductWithdrawal" isExecutable="true">
+    <!-- Lane definitions -->
+    <bpmn:laneSet id="LaneSet_ProductWithdrawal">
+      <bpmn:lane id="Lane_Initiator" name="Withdrawal Initiator">
+        <bpmn:flowNodeRef>StartEvent_WithdrawalTrigger</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_IdentifyReason</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_WithdrawalReason</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_ODIC" name="ODIC (Investment Center)">
+        <bpmn:flowNodeRef>Task_AssessImpact</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ClientImpact</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PrepareWithdrawal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_NotifyClients</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ArchiveProduct</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_VIN" name="VIN Committee">
+        <bpmn:flowNodeRef>Task_ReviewWithdrawal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ApprovalDecision</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Operations" name="Operations">
+        <bpmn:flowNodeRef>Task_DeactivateSystems</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ProcessFinalTransactions</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_ProductWithdrawn</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    
+    <!-- Flow nodes -->
+    <bpmn:startEvent id="StartEvent_WithdrawalTrigger" name="Withdrawal triggered">
+      <bpmn:outgoing>Flow_001</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:task id="Task_IdentifyReason" name="Identify withdrawal reason">
+      <bpmn:incoming>Flow_001</bpmn:incoming>
+      <bpmn:outgoing>Flow_002</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:exclusiveGateway id="Gateway_WithdrawalReason" name="Reason type?">
+      <bpmn:incoming>Flow_002</bpmn:incoming>
+      <bpmn:outgoing>Flow_003_Maturity</bpmn:outgoing>
+      <bpmn:outgoing>Flow_003_Business</bpmn:outgoing>
+      <bpmn:outgoing>Flow_003_Regulatory</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:task id="Task_AssessImpact" name="Assess client impact">
+      <bpmn:incoming>Flow_003_Maturity</bpmn:incoming>
+      <bpmn:incoming>Flow_003_Business</bpmn:incoming>
+      <bpmn:incoming>Flow_003_Regulatory</bpmn:incoming>
+      <bpmn:outgoing>Flow_004</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:exclusiveGateway id="Gateway_ClientImpact" name="High impact?">
+      <bpmn:incoming>Flow_004</bpmn:incoming>
+      <bpmn:outgoing>Flow_005_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_005_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:task id="Task_PrepareWithdrawal" name="Prepare withdrawal documentation">
+      <bpmn:incoming>Flow_005_Yes</bpmn:incoming>
+      <bpmn:incoming>Flow_005_No</bpmn:incoming>
+      <bpmn:outgoing>Flow_006</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_ReviewWithdrawal" name="Review withdrawal request">
+      <bpmn:incoming>Flow_006</bpmn:incoming>
+      <bpmn:outgoing>Flow_007</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:exclusiveGateway id="Gateway_ApprovalDecision" name="Approved?">
+      <bpmn:incoming>Flow_007</bpmn:incoming>
+      <bpmn:outgoing>Flow_008_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_008_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:task id="Task_NotifyClients" name="Notify affected clients">
+      <bpmn:incoming>Flow_008_Yes</bpmn:incoming>
+      <bpmn:outgoing>Flow_009</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_DeactivateSystems" name="Deactivate in systems">
+      <bpmn:incoming>Flow_009</bpmn:incoming>
+      <bpmn:outgoing>Flow_010</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_ProcessFinalTransactions" name="Process final transactions">
+      <bpmn:incoming>Flow_010</bpmn:incoming>
+      <bpmn:outgoing>Flow_011</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_ArchiveProduct" name="Archive product documentation">
+      <bpmn:incoming>Flow_011</bpmn:incoming>
+      <bpmn:outgoing>Flow_012</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:endEvent id="EndEvent_ProductWithdrawn" name="Product withdrawn">
+      <bpmn:incoming>Flow_008_No</bpmn:incoming>
+      <bpmn:incoming>Flow_012</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence flows -->
+    <bpmn:sequenceFlow id="Flow_001" sourceRef="StartEvent_WithdrawalTrigger" targetRef="Task_IdentifyReason"/>
+    <bpmn:sequenceFlow id="Flow_002" sourceRef="Task_IdentifyReason" targetRef="Gateway_WithdrawalReason"/>
+    <bpmn:sequenceFlow id="Flow_003_Maturity" name="Maturity" sourceRef="Gateway_WithdrawalReason" targetRef="Task_AssessImpact"/>
+    <bpmn:sequenceFlow id="Flow_003_Business" name="Business" sourceRef="Gateway_WithdrawalReason" targetRef="Task_AssessImpact"/>
+    <bpmn:sequenceFlow id="Flow_003_Regulatory" name="Regulatory" sourceRef="Gateway_WithdrawalReason" targetRef="Task_AssessImpact"/>
+    <bpmn:sequenceFlow id="Flow_004" sourceRef="Task_AssessImpact" targetRef="Gateway_ClientImpact"/>
+    <bpmn:sequenceFlow id="Flow_005_Yes" name="Yes" sourceRef="Gateway_ClientImpact" targetRef="Task_PrepareWithdrawal"/>
+    <bpmn:sequenceFlow id="Flow_005_No" name="No" sourceRef="Gateway_ClientImpact" targetRef="Task_PrepareWithdrawal"/>
+    <bpmn:sequenceFlow id="Flow_006" sourceRef="Task_PrepareWithdrawal" targetRef="Task_ReviewWithdrawal"/>
+    <bpmn:sequenceFlow id="Flow_007" sourceRef="Task_ReviewWithdrawal" targetRef="Gateway_ApprovalDecision"/>
+    <bpmn:sequenceFlow id="Flow_008_Yes" name="Yes" sourceRef="Gateway_ApprovalDecision" targetRef="Task_NotifyClients"/>
+    <bpmn:sequenceFlow id="Flow_008_No" name="No" sourceRef="Gateway_ApprovalDecision" targetRef="EndEvent_ProductWithdrawn"/>
+    <bpmn:sequenceFlow id="Flow_009" sourceRef="Task_NotifyClients" targetRef="Task_DeactivateSystems"/>
+    <bpmn:sequenceFlow id="Flow_010" sourceRef="Task_DeactivateSystems" targetRef="Task_ProcessFinalTransactions"/>
+    <bpmn:sequenceFlow id="Flow_011" sourceRef="Task_ProcessFinalTransactions" targetRef="Task_ArchiveProduct"/>
+    <bpmn:sequenceFlow id="Flow_012" sourceRef="Task_ArchiveProduct" targetRef="EndEvent_ProductWithdrawn"/>
+  </bpmn:process>
+  
+  <!-- DI Layout -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ProductWithdrawal">
+    <bpmndi:BPMNPlane id="BPMNPlane_ProductWithdrawal" bpmnElement="Collaboration_ProductWithdrawal">
+      <bpmndi:BPMNShape id="Pool_ProductWithdrawal_di" bpmnElement="Pool_ProductWithdrawal" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1600" height="620"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_Initiator_di" bpmnElement="Lane_Initiator" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="1570" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_ODIC_di" bpmnElement="Lane_ODIC" isHorizontal="true">
+        <dc:Bounds x="190" y="230" width="1570" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_VIN_di" bpmnElement="Lane_VIN" isHorizontal="true">
+        <dc:Bounds x="190" y="380" width="1570" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_Operations_di" bpmnElement="Lane_Operations" isHorizontal="true">
+        <dc:Bounds x="190" y="530" width="1570" height="170"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Initiator lane elements -->
+      <bpmndi:BPMNShape id="StartEvent_WithdrawalTrigger_di" bpmnElement="StartEvent_WithdrawalTrigger">
+        <dc:Bounds x="220" y="140" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="210" y="183" width="56" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_IdentifyReason_di" bpmnElement="Task_IdentifyReason">
+        <dc:Bounds x="320" y="118" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Gateway_WithdrawalReason_di" bpmnElement="Gateway_WithdrawalReason" isMarkerVisible="true">
+        <dc:Bounds x="480" y="133" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="469" y="190" width="72" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ODIC lane elements -->
+      <bpmndi:BPMNShape id="Task_AssessImpact_di" bpmnElement="Task_AssessImpact">
+        <dc:Bounds x="600" y="265" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Gateway_ClientImpact_di" bpmnElement="Gateway_ClientImpact" isMarkerVisible="true">
+        <dc:Bounds x="760" y="280" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="752" y="337" width="66" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_PrepareWithdrawal_di" bpmnElement="Task_PrepareWithdrawal">
+        <dc:Bounds x="880" y="265" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_NotifyClients_di" bpmnElement="Task_NotifyClients">
+        <dc:Bounds x="1200" y="265" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_ArchiveProduct_di" bpmnElement="Task_ArchiveProduct">
+        <dc:Bounds x="1540" y="265" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- VIN lane elements -->
+      <bpmndi:BPMNShape id="Task_ReviewWithdrawal_di" bpmnElement="Task_ReviewWithdrawal">
+        <dc:Bounds x="1040" y="415" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Gateway_ApprovalDecision_di" bpmnElement="Gateway_ApprovalDecision" isMarkerVisible="true">
+        <dc:Bounds x="1200" y="430" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1197" y="487" width="56" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Operations lane elements -->
+      <bpmndi:BPMNShape id="Task_DeactivateSystems_di" bpmnElement="Task_DeactivateSystems">
+        <dc:Bounds x="1320" y="580" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_ProcessFinalTransactions_di" bpmnElement="Task_ProcessFinalTransactions">
+        <dc:Bounds x="1460" y="580" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_ProductWithdrawn_di" bpmnElement="EndEvent_ProductWithdrawn">
+        <dc:Bounds x="1680" y="602" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1654" y="645" width="89" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence flows -->
+      <bpmndi:BPMNEdge id="Flow_001_di" bpmnElement="Flow_001">
+        <di:waypoint x="256" y="158"/>
+        <di:waypoint x="320" y="158"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_002_di" bpmnElement="Flow_002">
+        <di:waypoint x="420" y="158"/>
+        <di:waypoint x="480" y="158"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_003_Maturity_di" bpmnElement="Flow_003_Maturity">
+        <di:waypoint x="530" y="158"/>
+        <di:waypoint x="650" y="158"/>
+        <di:waypoint x="650" y="265"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="571" y="140" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_003_Business_di" bpmnElement="Flow_003_Business">
+        <di:waypoint x="505" y="183"/>
+        <di:waypoint x="505" y="305"/>
+        <di:waypoint x="600" y="305"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="497" y="241" width="46" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_003_Regulatory_di" bpmnElement="Flow_003_Regulatory">
+        <di:waypoint x="505" y="133"/>
+        <di:waypoint x="505" y="70"/>
+        <di:waypoint x="680" y="70"/>
+        <di:waypoint x="680" y="265"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="565" y="52" width="56" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_004_di" bpmnElement="Flow_004">
+        <di:waypoint x="700" y="305"/>
+        <di:waypoint x="760" y="305"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_005_Yes_di" bpmnElement="Flow_005_Yes">
+        <di:waypoint x="810" y="305"/>
+        <di:waypoint x="880" y="305"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="836" y="287" width="18" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_005_No_di" bpmnElement="Flow_005_No">
+        <di:waypoint x="785" y="280"/>
+        <di:waypoint x="785" y="250"/>
+        <di:waypoint x="930" y="250"/>
+        <di:waypoint x="930" y="265"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="850" y="232" width="15" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_006_di" bpmnElement="Flow_006">
+        <di:waypoint x="980" y="305"/>
+        <di:waypoint x="1090" y="305"/>
+        <di:waypoint x="1090" y="415"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_007_di" bpmnElement="Flow_007">
+        <di:waypoint x="1140" y="455"/>
+        <di:waypoint x="1200" y="455"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_008_Yes_di" bpmnElement="Flow_008_Yes">
+        <di:waypoint x="1225" y="430"/>
+        <di:waypoint x="1225" y="387"/>
+        <di:waypoint x="1250" y="387"/>
+        <di:waypoint x="1250" y="345"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1231" y="369" width="18" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_008_No_di" bpmnElement="Flow_008_No">
+        <di:waypoint x="1250" y="455"/>
+        <di:waypoint x="1698" y="455"/>
+        <di:waypoint x="1698" y="602"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1467" y="437" width="15" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_009_di" bpmnElement="Flow_009">
+        <di:waypoint x="1300" y="305"/>
+        <di:waypoint x="1370" y="305"/>
+        <di:waypoint x="1370" y="580"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_010_di" bpmnElement="Flow_010">
+        <di:waypoint x="1420" y="620"/>
+        <di:waypoint x="1460" y="620"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_011_di" bpmnElement="Flow_011">
+        <di:waypoint x="1560" y="620"/>
+        <di:waypoint x="1590" y="620"/>
+        <di:waypoint x="1590" y="345"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_012_di" bpmnElement="Flow_012">
+        <di:waypoint x="1640" y="305"/>
+        <di:waypoint x="1698" y="305"/>
+        <di:waypoint x="1698" y="602"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

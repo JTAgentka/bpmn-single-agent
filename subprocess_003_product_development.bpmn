@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_ProductDevelopment"
+                  targetNamespace="http://jtbank.cz/investment">
+  
+  <bpmn:collaboration id="Collaboration_ProductDevelopment">
+    <bpmn:participant id="Pool_ProductDevelopment" name="Product Development Process" processRef="Process_ProductDevelopment"/>
+  </bpmn:collaboration>
+  
+  <bpmn:process id="Process_ProductDevelopment" isExecutable="true">
+    <!-- Lane definitions -->
+    <bpmn:laneSet id="LaneSet_ProductDevelopment">
+      <bpmn:lane id="Lane_ODIC" name="ODIC (Investment Center)">
+        <bpmn:flowNodeRef>StartEvent_Development</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_BankRole</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RiskAnalysis</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_TargetMarket</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_DistributionStrategy</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PrepareDocumentation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CreateProduct</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ObtainDocumentation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_ReadyForDistribution</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Risk" name="Risk Management (OŘR)">
+        <bpmn:flowNodeRef>Task_ClassifyRisk</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_IT" name="IT Systems">
+        <bpmn:flowNodeRef>Task_AssessSystemReadiness</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_SystemReady</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ImplementChanges</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    
+    <!-- Flow nodes -->
+    <bpmn:startEvent id="StartEvent_Development" name="Start development">
+      <bpmn:outgoing>Flow_001</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:exclusiveGateway id="Gateway_BankRole" name="Bank role?">
+      <bpmn:incoming>Flow_001</bpmn:incoming>
+      <bpmn:outgoing>Flow_002_Creator</bpmn:outgoing>
+      <bpmn:outgoing>Flow_002_Distributor</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:task id="Task_CreateProduct" name="Create investment product">
+      <bpmn:incoming>Flow_002_Creator</bpmn:incoming>
+      <bpmn:outgoing>Flow_003</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_ObtainDocumentation" name="Obtain product documentation from creator">
+      <bpmn:incoming>Flow_002_Distributor</bpmn:incoming>
+      <bpmn:outgoing>Flow_004</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_RiskAnalysis" name="Perform risk analysis">
+      <bpmn:incoming>Flow_003</bpmn:incoming>
+      <bpmn:incoming>Flow_004</bpmn:incoming>
+      <bpmn:outgoing>Flow_005</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_ClassifyRisk" name="Classify risk level">
+      <bpmn:incoming>Flow_005</bpmn:incoming>
+      <bpmn:outgoing>Flow_006</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_TargetMarket" name="Define target market">
+      <bpmn:incoming>Flow_006</bpmn:incoming>
+      <bpmn:outgoing>Flow_007</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_DistributionStrategy" name="Design distribution strategy">
+      <bpmn:incoming>Flow_007</bpmn:incoming>
+      <bpmn:outgoing>Flow_008</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_AssessSystemReadiness" name="Assess IT system readiness">
+      <bpmn:incoming>Flow_008</bpmn:incoming>
+      <bpmn:outgoing>Flow_009</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:exclusiveGateway id="Gateway_SystemReady" name="System ready?">
+      <bpmn:incoming>Flow_009</bpmn:incoming>
+      <bpmn:outgoing>Flow_010_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_010_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:task id="Task_ImplementChanges" name="Implement IT changes">
+      <bpmn:incoming>Flow_010_No</bpmn:incoming>
+      <bpmn:outgoing>Flow_011</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:task id="Task_PrepareDocumentation" name="Prepare final documentation (KID, Prospectus)">
+      <bpmn:incoming>Flow_010_Yes</bpmn:incoming>
+      <bpmn:incoming>Flow_011</bpmn:incoming>
+      <bpmn:outgoing>Flow_012</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:endEvent id="EndEvent_ReadyForDistribution" name="Ready for distribution">
+      <bpmn:incoming>Flow_012</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence flows -->
+    <bpmn:sequenceFlow id="Flow_001" sourceRef="StartEvent_Development" targetRef="Gateway_BankRole"/>
+    <bpmn:sequenceFlow id="Flow_002_Creator" name="Creator" sourceRef="Gateway_BankRole" targetRef="Task_CreateProduct"/>
+    <bpmn:sequenceFlow id="Flow_002_Distributor" name="Distributor" sourceRef="Gateway_BankRole" targetRef="Task_ObtainDocumentation"/>
+    <bpmn:sequenceFlow id="Flow_003" sourceRef="Task_CreateProduct" targetRef="Task_RiskAnalysis"/>
+    <bpmn:sequenceFlow id="Flow_004" sourceRef="Task_ObtainDocumentation" targetRef="Task_RiskAnalysis"/>
+    <bpmn:sequenceFlow id="Flow_005" sourceRef="Task_RiskAnalysis" targetRef="Task_ClassifyRisk"/>
+    <bpmn:sequenceFlow id="Flow_006" sourceRef="Task_ClassifyRisk" targetRef="Task_TargetMarket"/>
+    <bpmn:sequenceFlow id="Flow_007" sourceRef="Task_TargetMarket" targetRef="Task_DistributionStrategy"/>
+    <bpmn:sequenceFlow id="Flow_008" sourceRef="Task_DistributionStrategy" targetRef="Task_AssessSystemReadiness"/>
+    <bpmn:sequenceFlow id="Flow_009" sourceRef="Task_AssessSystemReadiness" targetRef="Gateway_SystemReady"/>
+    <bpmn:sequenceFlow id="Flow_010_Yes" name="Yes" sourceRef="Gateway_SystemReady" targetRef="Task_PrepareDocumentation"/>
+    <bpmn:sequenceFlow id="Flow_010_No" name="No" sourceRef="Gateway_SystemReady" targetRef="Task_ImplementChanges"/>
+    <bpmn:sequenceFlow id="Flow_011" sourceRef="Task_ImplementChanges" targetRef="Task_PrepareDocumentation"/>
+    <bpmn:sequenceFlow id="Flow_012" sourceRef="Task_PrepareDocumentation" targetRef="EndEvent_ReadyForDistribution"/>
+  </bpmn:process>
+  
+  <!-- DI Layout -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ProductDevelopment">
+    <bpmndi:BPMNPlane id="BPMNPlane_ProductDevelopment" bpmnElement="Collaboration_ProductDevelopment">
+      <bpmndi:BPMNShape id="Pool_ProductDevelopment_di" bpmnElement="Pool_ProductDevelopment" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1600" height="470"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_ODIC_di" bpmnElement="Lane_ODIC" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="1570" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_Risk_di" bpmnElement="Lane_Risk" isHorizontal="true">
+        <dc:Bounds x="190" y="230" width="1570" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_IT_di" bpmnElement="Lane_IT" isHorizontal="true">
+        <dc:Bounds x="190" y="380" width="1570" height="170"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- ODIC lane elements -->
+      <bpmndi:BPMNShape id="StartEvent_Development_di" bpmnElement="StartEvent_Development">
+        <dc:Bounds x="220" y="140" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="194" y="183" width="88" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Gateway_BankRole_di" bpmnElement="Gateway_BankRole" isMarkerVisible="true">
+        <dc:Bounds x="320" y="133" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="315" y="190" width="56" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_CreateProduct_di" bpmnElement="Task_CreateProduct">
+        <dc:Bounds x="440" y="118" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_ObtainDocumentation_di" bpmnElement="Task_ObtainDocumentation">
+        <dc:Bounds x="440" y="30" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_RiskAnalysis_di" bpmnElement="Task_RiskAnalysis">
+        <dc:Bounds x="600" y="118" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_TargetMarket_di" bpmnElement="Task_TargetMarket">
+        <dc:Bounds x="880" y="118" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_DistributionStrategy_di" bpmnElement="Task_DistributionStrategy">
+        <dc:Bounds x="1040" y="118" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_PrepareDocumentation_di" bpmnElement="Task_PrepareDocumentation">
+        <dc:Bounds x="1480" y="118" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_ReadyForDistribution_di" bpmnElement="EndEvent_ReadyForDistribution">
+        <dc:Bounds x="1660" y="140" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1650" y="183" width="56" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Risk lane elements -->
+      <bpmndi:BPMNShape id="Task_ClassifyRisk_di" bpmnElement="Task_ClassifyRisk">
+        <dc:Bounds x="740" y="265" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- IT lane elements -->
+      <bpmndi:BPMNShape id="Task_AssessSystemReadiness_di" bpmnElement="Task_AssessSystemReadiness">
+        <dc:Bounds x="1180" y="430" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Gateway_SystemReady_di" bpmnElement="Gateway_SystemReady" isMarkerVisible="true">
+        <dc:Bounds x="1320" y="445" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1308" y="502" width="74" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_ImplementChanges_di" bpmnElement="Task_ImplementChanges">
+        <dc:Bounds x="1420" y="430" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence flows -->
+      <bpmndi:BPMNEdge id="Flow_001_di" bpmnElement="Flow_001">
+        <di:waypoint x="256" y="158"/>
+        <di:waypoint x="320" y="158"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_002_Creator_di" bpmnElement="Flow_002_Creator">
+        <di:waypoint x="370" y="158"/>
+        <di:waypoint x="440" y="158"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="382" y="140" width="38" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_002_Distributor_di" bpmnElement="Flow_002_Distributor">
+        <di:waypoint x="345" y="133"/>
+        <di:waypoint x="345" y="70"/>
+        <di:waypoint x="440" y="70"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="356" y="52" width="52" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_003_di" bpmnElement="Flow_003">
+        <di:waypoint x="540" y="158"/>
+        <di:waypoint x="600" y="158"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_004_di" bpmnElement="Flow_004">
+        <di:waypoint x="540" y="70"/>
+        <di:waypoint x="650" y="70"/>
+        <di:waypoint x="650" y="118"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_005_di" bpmnElement="Flow_005">
+        <di:waypoint x="700" y="158"/>
+        <di:waypoint x="790" y="158"/>
+        <di:waypoint x="790" y="265"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_006_di" bpmnElement="Flow_006">
+        <di:waypoint x="840" y="305"/>
+        <di:waypoint x="930" y="305"/>
+        <di:waypoint x="930" y="198"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_007_di" bpmnElement="Flow_007">
+        <di:waypoint x="980" y="158"/>
+        <di:waypoint x="1040" y="158"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_008_di" bpmnElement="Flow_008">
+        <di:waypoint x="1140" y="158"/>
+        <di:waypoint x="1230" y="158"/>
+        <di:waypoint x="1230" y="430"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_009_di" bpmnElement="Flow_009">
+        <di:waypoint x="1280" y="470"/>
+        <di:waypoint x="1320" y="470"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_010_Yes_di" bpmnElement="Flow_010_Yes">
+        <di:waypoint x="1345" y="445"/>
+        <di:waypoint x="1345" y="158"/>
+        <di:waypoint x="1480" y="158"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1351" y="299" width="18" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_010_No_di" bpmnElement="Flow_010_No">
+        <di:waypoint x="1370" y="470"/>
+        <di:waypoint x="1420" y="470"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1388" y="452" width="15" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_011_di" bpmnElement="Flow_011">
+        <di:waypoint x="1520" y="470"/>
+        <di:waypoint x="1530" y="470"/>
+        <di:waypoint x="1530" y="198"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_012_di" bpmnElement="Flow_012">
+        <di:waypoint x="1580" y="158"/>
+        <di:waypoint x="1660" y="158"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
