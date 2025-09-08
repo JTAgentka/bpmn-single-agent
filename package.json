@@ -1,0 +1,25 @@
+{
+  "name": "bpmn-single-agent",
+  "version": "1.0.0",
+  "description": "BPMN Single Agent with Session Management",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "node -r ts-node/register src/session/example.ts",
+    "test:session": "ts-node src/session/example.ts"
+  },
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}

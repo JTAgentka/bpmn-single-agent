@@ -1,0 +1,13 @@
+{
+  "id": "a06009790265e248f068b10699a6287c",
+  "userId": "user123",
+  "createdAt": "2025-09-08T09:37:46.803Z",
+  "data": {
+    "name": "John Doe",
+    "preferences": {
+      "theme": "dark"
+    },
+    "lastVisit": "2025-09-08T09:37:46.807Z"
+  },
+  "updatedAt": "2025-09-08T09:37:46.807Z"
+}

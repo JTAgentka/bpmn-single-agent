@@ -1,0 +1,655 @@
+{
+  "session_metadata": {
+    "session_id": "session_1757315278501_l5ke2eqjh",
+    "version": "1.0",
+    "created_at": "2025-09-08T07:00:00.000Z",
+    "updated_at": "2025-09-08T08:30:00.000Z",
+    "status": "running"
+  },
+  "user_context": {
+    "user_id": "user_001",
+    "display_name": "User",
+    "locale": "en-US",
+    "organization": "Organization Name",
+    "role": "Process Analyst"
+  },
+  "document_info": {
+    "filename": "business_process.docx",
+    "version": "1.0",
+    "type": "procedural_guide",
+    "ingested_at": "2025-09-08T07:14:07.435Z",
+    "checksum_sha256": "abc123def456...",
+    "source_system": "Document Management System",
+    "classification": "Internal"
+  },
+  "orchestration": {
+    "controller": {
+      "session_ref": "session_1757315278501_l5ke2eqjh_interactive_controller",
+      "control_state": "dispatching",
+      "subprocess_registry": {
+        "total": 3,
+        "approved": 2,
+        "queued": [
+          "subprocess_2",
+          "subprocess_3"
+        ],
+        "in_progress": "subprocess_1",
+        "completed": [
+          "subprocess_1"
+        ],
+        "rejected": []
+      },
+      "user_prompts": {
+        "start_pipeline": true,
+        "next_subprocess_confirmed": false,
+        "handoff_to_qa_confirmed": false
+      },
+      "agent_references": {
+        "architect": "session_1757315278501_l5ke2eqjh_process_architect",
+        "analyst": "session_1757315278501_l5ke2eqjh_process_analyst",
+        "qa_gatekeeper": "session_1757315278501_l5ke2eqjh_process_quality_gatekeeper"
+      }
+    }
+  },
+  "analysis": {
+    "architect": {
+      "session_ref": "session_1757315278501_l5ke2eqjh_process_architect",
+      "status": "completed",
+      "criteria_examples": {
+        "structural": [
+          "Headers indicate process steps",
+          "Numbered lists show sequence",
+          "Tables define data mappings"
+        ],
+        "semantic": [
+          "Action verbs identify activities",
+          "Conditions indicate gateways",
+          "Roles specify swim lanes"
+        ],
+        "business_logic": [
+          "Approval requirements",
+          "Validation rules",
+          "Compliance checks"
+        ]
+      },
+      "analysis_notes": "Complex approval workflow with multiple decision points detected",
+      "detected_subprocesses": [
+        {
+          "id": "1",
+          "name": "customer_onboarding",
+          "category": "activation",
+          "purpose": "Initial customer registration and verification",
+          "detected_by": {
+            "structural": [
+              "Section 2.1: Customer Onboarding"
+            ],
+            "semantic": [
+              "Registration, verification, KYC keywords"
+            ],
+            "business_logic": [
+              "Identity verification requirements"
+            ]
+          },
+          "status": "approved",
+          "approval": {
+            "approved_by": "user_001",
+            "approved_at": "2025-09-08T07:15:00.000Z",
+            "comment": "Proceed with detailed mapping"
+          }
+        },
+        {
+          "id": "2",
+          "name": "account_activation",
+          "category": "activation",
+          "purpose": "Account setup and initial configuration",
+          "detected_by": {
+            "structural": [
+              "Section 2.2: Account Setup"
+            ],
+            "semantic": [
+              "Activation, configuration keywords"
+            ],
+            "business_logic": [
+              "Account limits and permissions"
+            ]
+          },
+          "status": "approved",
+          "approval": {
+            "approved_by": "user_001",
+            "approved_at": "2025-09-08T07:16:00.000Z",
+            "comment": "Include in pipeline"
+          }
+        },
+        {
+          "id": "3",
+          "name": "service_provisioning",
+          "category": "operation",
+          "purpose": "Enable requested services for customer",
+          "detected_by": {
+            "structural": [
+              "Section 3: Service Enablement"
+            ],
+            "semantic": [
+              "Service, provisioning, enablement keywords"
+            ],
+            "business_logic": [
+              "Service eligibility criteria"
+            ]
+          },
+          "status": "proposed",
+          "approval": null
+        },
+        {
+          "id": "4",
+          "name": "new_subprocess"
+        }
+      ]
+    }
+  },
+  "implementation": {
+    "analyst": {
+      "session_ref": "session_1757315278501_l5ke2eqjh_process_analyst",
+      "status": "processing",
+      "current_subprocess": "1",
+      "queue": [
+        "2",
+        "3"
+      ],
+      "subprocess_implementations": [
+        {
+          "subprocess_id": "1",
+          "subprocess_name": "customer_onboarding",
+          "implementation_status": "completed",
+          "building_blocks": {
+            "status": "approved",
+            "timestamp": "2025-09-08T07:20:00.000Z",
+            "mapping": {
+              "start_event": "Customer initiates registration",
+              "end_event": "Account activated",
+              "authentication_level": "enhanced",
+              "channel_access": [
+                "web_portal",
+                "mobile_app",
+                "branch"
+              ],
+              "process_steps": [
+                "Collect personal information",
+                "Upload identity documents",
+                "Verify identity (automated)",
+                "Perform AML/KYC checks",
+                "Review application",
+                "Create account",
+                "Send welcome package"
+              ],
+              "decision_points": [
+                {
+                  "type": "exclusive",
+                  "question": "Is identity verified?",
+                  "outcomes": [
+                    "Yes - Proceed",
+                    "No - Request additional docs"
+                  ]
+                },
+                {
+                  "type": "exclusive",
+                  "question": "AML check passed?",
+                  "outcomes": [
+                    "Yes - Continue",
+                    "No - Escalate to compliance"
+                  ]
+                }
+              ],
+              "exception_handling": [
+                {
+                  "type": "timeout",
+                  "trigger": "No response in 24 hours",
+                  "action": "Send reminder email"
+                },
+                {
+                  "type": "error",
+                  "trigger": "Document validation failed",
+                  "action": "Request document resubmission"
+                }
+              ]
+            }
+          },
+          "actor_mapping": {
+            "status": "approved",
+            "timestamp": "2025-09-08T07:25:00.000Z",
+            "lanes": {
+              "customer_facing": {
+                "Customer": [
+                  "Fill Registration Form",
+                  "Upload Documents",
+                  "Confirm Information"
+                ]
+              },
+              "system_automated": {
+                "KYC Service": [
+                  "Verify Identity",
+                  "Check Watchlists"
+                ],
+                "Document Service": [
+                  "Validate Documents",
+                  "Store Documents"
+                ],
+                "Notification Service": [
+                  "Send Emails",
+                  "Send SMS"
+                ]
+              },
+              "internal_staff": {
+                "Compliance Officer": [
+                  "Review High Risk Cases"
+                ],
+                "Account Manager": [
+                  "Approve Account",
+                  "Set Limits"
+                ]
+              },
+              "external_services": {
+                "Credit Bureau": [
+                  "Credit Check"
+                ],
+                "Government Database": [
+                  "Identity Verification"
+                ]
+              }
+            }
+          },
+          "bpmn_generation": {
+            "status": "approved",
+            "timestamp": "2025-09-08T07:30:00.000Z",
+            "diagram_properties": {
+              "orientation": "vertical",
+              "lanes_count": 4,
+              "elements_count": {
+                "tasks": 12,
+                "gateways": 3,
+                "events": 4,
+                "sequence_flows": 18
+              }
+            },
+            "bpmn_elements": {
+              "collaboration": {
+                "id": "Collaboration_1",
+                "participants": [
+                  {
+                    "id": "Participant_Customer",
+                    "name": "Customer"
+                  },
+                  {
+                    "id": "Participant_System",
+                    "name": "System"
+                  },
+                  {
+                    "id": "Participant_Compliance",
+                    "name": "Compliance"
+                  },
+                  {
+                    "id": "Participant_External",
+                    "name": "External Services"
+                  }
+                ]
+              },
+              "process": {
+                "id": "Process_CustomerOnboarding",
+                "name": "Customer Onboarding Process",
+                "is_executable": true
+              },
+              "key_elements": [
+                {
+                  "type": "startEvent",
+                  "id": "StartEvent_1",
+                  "name": "Registration Initiated"
+                },
+                {
+                  "type": "userTask",
+                  "id": "UserTask_1",
+                  "name": "Fill Registration Form",
+                  "assignee": "Customer"
+                },
+                {
+                  "type": "serviceTask",
+                  "id": "ServiceTask_1",
+                  "name": "Verify Identity",
+                  "implementation": "KYC Service"
+                },
+                {
+                  "type": "exclusiveGateway",
+                  "id": "ExclusiveGateway_1",
+                  "name": "Identity Verified?"
+                },
+                {
+                  "type": "endEvent",
+                  "id": "EndEvent_1",
+                  "name": "Account Activated"
+                }
+              ]
+            },
+            "file_references": {
+              "bpmn_xml": "storage/bpmn/subprocess_1_customer_onboarding.bpmn",
+              "preview_image": "storage/bpmn/subprocess_1_customer_onboarding.png",
+              "source_mapping": "storage/mappings/subprocess_1_mapping.json"
+            }
+          },
+          "di_layout": {
+            "status": "approved",
+            "timestamp": "2025-09-08T07:35:00.000Z",
+            "layout_configuration": {
+              "grid_type": "vertical",
+              "lane_height_px": 200,
+              "lane_spacing_px": 20,
+              "element_sizing": {
+                "task": {
+                  "width": 100,
+                  "height": 80
+                },
+                "gateway": {
+                  "width": 50,
+                  "height": 50
+                },
+                "event": {
+                  "width": 36,
+                  "height": 36
+                }
+              },
+              "label_positioning": "bottom-center",
+              "connection_routing": "orthogonal"
+            },
+            "diagram_statistics": {
+              "total_shapes": 25,
+              "total_edges": 18,
+              "labels_non_overlapping": true,
+              "diagram_bounds": {
+                "width": 1200,
+                "height": 800
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "quality_assurance": {
+    "gatekeeper": {
+      "session_ref": "session_1757315278501_l5ke2eqjh_process_quality_gatekeeper",
+      "status": "in_progress",
+      "qa_scope": {
+        "subprocess_ids": [
+          "1",
+          "2",
+          "3"
+        ],
+        "total_count": 3,
+        "checked_count": 1,
+        "pending_count": 2
+      },
+      "qa_results": [
+        {
+          "subprocess_id": "1",
+          "subprocess_name": "customer_onboarding",
+          "checked_at": "2025-09-08T07:40:00.000Z",
+          "capability_validation": {
+            "status": "pass",
+            "bian_mapping": {
+              "mapped_domains": [
+                "Party Data Management",
+                "Customer Offer",
+                "Customer Profile",
+                "Regulatory Compliance"
+              ],
+              "unmapped_capabilities": [],
+              "coverage_percentage": 100
+            },
+            "notes": "All capabilities properly mapped to BIAN service domains"
+          },
+          "structural_validation": {
+            "status": "pass",
+            "checks": {
+              "bpmn_syntax_valid": true,
+              "xml_well_formed": true,
+              "collaboration_present": true,
+              "process_present": true,
+              "all_lanes_referenced": true,
+              "all_tasks_connected": true,
+              "start_end_events_present": true,
+              "gateways_properly_connected": true
+            },
+            "notes": "BPMN 2.0 compliant structure"
+          },
+          "tool_compatibility": {
+            "status": "pass_with_notes",
+            "enterprise_architect": {
+              "import_successful": true,
+              "namespaces_recognized": true,
+              "elements_rendered": true,
+              "layout_preserved": true
+            },
+            "bpmn_io": {
+              "renders_correctly": true,
+              "interactive_elements": true,
+              "vertical_layout_maintained": true,
+              "labels_readable": false
+            },
+            "camunda": {
+              "deployable": true,
+              "execution_ready": false,
+              "forms_configured": false
+            },
+            "notes": "Minor label adjustments needed for BPMN.io viewer"
+          },
+          "compliance_check": {
+            "status": "pass",
+            "regulatory_requirements": {
+              "gdpr_compliant": true,
+              "pci_dss_compliant": true,
+              "aml_kyc_compliant": true
+            },
+            "internal_standards": {
+              "naming_conventions": true,
+              "documentation_complete": true,
+              "approval_workflow": true
+            }
+          },
+          "final_assessment": {
+            "verdict": "pass",
+            "risk_level": "low",
+            "recommendations": [
+              "Adjust label positioning for better readability",
+              "Add timer events for SLA monitoring",
+              "Consider adding compensation events for rollback scenarios"
+            ],
+            "approval": {
+              "status": "approved",
+              "approved_by": "user_001",
+              "approved_at": "2025-09-08T07:45:00.000Z",
+              "comments": "Approved with minor UI adjustments"
+            }
+          }
+        }
+      ],
+      "summary_metrics": {
+        "total_subprocesses": 3,
+        "passed": 1,
+        "failed": 0,
+        "needs_fix": 0,
+        "pending_review": 2,
+        "average_quality_score": 95
+      }
+    }
+  },
+  "execution_history": {
+    "events": [
+      {
+        "timestamp": "2025-09-08T07:00:00.000Z",
+        "agent": "system",
+        "action": "session_initialized",
+        "details": "New consolidated session created",
+        "subprocess_id": null
+      },
+      {
+        "timestamp": "2025-09-08T07:05:00.000Z",
+        "agent": "interactive_controller",
+        "action": "document_received",
+        "details": "Business process document uploaded",
+        "subprocess_id": null
+      },
+      {
+        "timestamp": "2025-09-08T07:10:00.000Z",
+        "agent": "process_architect",
+        "action": "analysis_started",
+        "details": "Beginning document analysis",
+        "subprocess_id": null
+      },
+      {
+        "timestamp": "2025-09-08T07:14:00.000Z",
+        "agent": "process_architect",
+        "action": "subprocesses_identified",
+        "details": "Found 3 subprocesses",
+        "subprocess_id": null
+      },
+      {
+        "timestamp": "2025-09-08T07:15:00.000Z",
+        "agent": "user",
+        "action": "subprocess_approved",
+        "details": "Approved customer_onboarding subprocess",
+        "subprocess_id": "1"
+      },
+      {
+        "timestamp": "2025-09-08T07:16:00.000Z",
+        "agent": "user",
+        "action": "subprocess_approved",
+        "details": "Approved account_activation subprocess",
+        "subprocess_id": "2"
+      },
+      {
+        "timestamp": "2025-09-08T07:17:00.000Z",
+        "agent": "interactive_controller",
+        "action": "handoff_to_analyst",
+        "details": "Dispatching subprocess 1 to Process Analyst",
+        "subprocess_id": "1"
+      },
+      {
+        "timestamp": "2025-09-08T07:20:00.000Z",
+        "agent": "process_analyst",
+        "action": "building_blocks_mapped",
+        "details": "Completed Step 2: Building blocks mapping",
+        "subprocess_id": "1"
+      },
+      {
+        "timestamp": "2025-09-08T07:25:00.000Z",
+        "agent": "process_analyst",
+        "action": "actors_mapped",
+        "details": "Completed Step 3: Actor mapping",
+        "subprocess_id": "1"
+      },
+      {
+        "timestamp": "2025-09-08T07:30:00.000Z",
+        "agent": "process_analyst",
+        "action": "bpmn_generated",
+        "details": "Completed Step 4: BPMN generation",
+        "subprocess_id": "1"
+      },
+      {
+        "timestamp": "2025-09-08T07:35:00.000Z",
+        "agent": "process_analyst",
+        "action": "di_layout_applied",
+        "details": "Completed Step 5: DI layout",
+        "subprocess_id": "1"
+      },
+      {
+        "timestamp": "2025-09-08T07:37:00.000Z",
+        "agent": "interactive_controller",
+        "action": "handoff_to_qa",
+        "details": "Subprocess 1 sent to QA",
+        "subprocess_id": "1"
+      },
+      {
+        "timestamp": "2025-09-08T07:40:00.000Z",
+        "agent": "process_quality_gatekeeper",
+        "action": "qa_check_completed",
+        "details": "Quality check passed for subprocess 1",
+        "subprocess_id": "1"
+      },
+      {
+        "timestamp": "2025-09-08T07:45:00.000Z",
+        "agent": "user",
+        "action": "qa_approved",
+        "details": "User approved QA results",
+        "subprocess_id": "1"
+      }
+    ],
+    "state_transitions": [
+      {
+        "timestamp": "2025-09-08T07:00:00.000Z",
+        "from_state": "not_started",
+        "to_state": "initializing",
+        "trigger": "session_create"
+      },
+      {
+        "timestamp": "2025-09-08T07:10:00.000Z",
+        "from_state": "initializing",
+        "to_state": "analyzing",
+        "trigger": "document_uploaded"
+      },
+      {
+        "timestamp": "2025-09-08T07:17:00.000Z",
+        "from_state": "analyzing",
+        "to_state": "processing",
+        "trigger": "subprocesses_approved"
+      },
+      {
+        "timestamp": "2025-09-08T07:37:00.000Z",
+        "from_state": "processing",
+        "to_state": "quality_check",
+        "trigger": "implementation_complete"
+      },
+      {
+        "timestamp": "2025-09-08T07:45:00.000Z",
+        "from_state": "quality_check",
+        "to_state": "processing",
+        "trigger": "qa_approved_continue"
+      }
+    ]
+  },
+  "performance_metrics": {
+    "timing": {
+      "total_elapsed_time_minutes": 45,
+      "average_subprocess_time_minutes": 20,
+      "analysis_phase_minutes": 10,
+      "implementation_phase_minutes": 20,
+      "qa_phase_minutes": 5
+    },
+    "quality": {
+      "first_pass_success_rate": 100,
+      "rework_required": false,
+      "user_interventions": 3,
+      "automated_steps": 12
+    },
+    "throughput": {
+      "subprocesses_completed": 1,
+      "subprocesses_in_progress": 0,
+      "subprocesses_queued": 2
+    }
+  },
+  "audit_trail": {
+    "session_files": [
+      "storage/audit/session_1757315278501_l5ke2eqjh_interactive_controller_session.json",
+      "storage/audit/session_1757315278501_l5ke2eqjh_process_architect_session.json",
+      "storage/audit/session_1757315278501_l5ke2eqjh_process_analyst_session.json",
+      "storage/audit/session_1757315278501_l5ke2eqjh_process_quality_gatekeeper_session.json"
+    ],
+    "audit_logs": [
+      "storage/audit/session_1757315278501_l5ke2eqjh_Interactive Controller.jsonl",
+      "storage/audit/session_1757315278501_l5ke2eqjh_Process Architect.jsonl",
+      "storage/audit/session_1757315278501_l5ke2eqjh_Process Analyst.jsonl",
+      "storage/audit/session_1757315278501_l5ke2eqjh_Process Quality Gatekeeper.jsonl"
+    ],
+    "generated_artifacts": [
+      "storage/bpmn/subprocess_1_customer_onboarding.bpmn",
+      "storage/mappings/subprocess_1_mapping.json",
+      "output/consolidated_session_structure.json"
+    ]
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "id": "c4bbde078161345a62962ca925e1e715",
+  "userId": "user_001",
+  "createdAt": "2025-09-08T09:43:47.419Z",
+  "data": {
+    "session_metadata": {
+      "session_id": "session_1757324627419",
+      "version": "1.0",
+      "created_at": "2025-09-08T09:43:47.419Z",
+      "updated_at": "2025-09-08T09:43:47.419Z",
+      "status": "processing"
+    },
+    "document_info": {
+      "filename": "business_process.docx",
+      "type": "procedural_guide",
+      "ingested_at": "2025-09-08T09:43:47.417Z"
+    },
+    "orchestration": {
+      "controller": {
+        "control_state": "idle",
+        "subprocess_registry": {
+          "total": 3,
+          "approved": 2,
+          "queued": [
+            "2"
+          ],
+          "in_progress": null,
+          "completed": [
+            "1"
+          ]
+        }
+      }
+    },
+    "analysis": {
+      "architect": {
+        "status": "completed",
+        "detected_subprocesses": [
+          {
+            "id": "1",
+            "name": "customer_onboarding",
+            "category": "activation",
+            "status": "approved",
+            "approval": {
+              "approved_by": "user_001",
+              "approved_at": "2025-09-08T09:43:47.421Z"
+            }
+          },
+          {
+            "id": "2",
+            "name": "account_activation",
+            "category": "activation",
+            "status": "approved",
+            "approval": {
+              "approved_by": "user_001",
+              "approved_at": "2025-09-08T09:43:47.421Z"
+            }
+          },
+          {
+            "id": "3",
+            "name": "service_provisioning",
+            "category": "operation"
+          }
+        ]
+      }
+    },
+    "execution_history": {
+      "events": [
+        {
+          "timestamp": "2025-09-08T09:43:47.419Z",
+          "agent": "system",
+          "action": "session_initialized",
+          "details": "Session created"
+        },
+        {
+          "timestamp": "2025-09-08T09:43:47.420Z",
+          "agent": "process_architect",
+          "action": "subprocesses_identified",
+          "details": "Found 3 subprocesses"
+        },
+        {
+          "timestamp": "2025-09-08T09:43:47.421Z",
+          "agent": "user",
+          "action": "subprocesses_approved",
+          "details": "Approved 2 subprocesses"
+        },
+        {
+          "timestamp": "2025-09-08T09:43:47.421Z",
+          "agent": "process_analyst",
+          "action": "subprocess_implemented",
+          "details": "Completed implementation of subprocess 1"
+        },
+        {
+          "timestamp": "2025-09-08T09:43:47.422Z",
+          "agent": "process_quality_gatekeeper",
+          "action": "qa_completed",
+          "details": "QA pass for subprocess 1"
+        }
+      ]
+    },
+    "implementation": {
+      "analyst": {
+        "status": "processing",
+        "subprocess_implementations": [
+          {
+            "subprocess_id": "1",
+            "subprocess_name": "customer_onboarding",
+            "implementation_status": "completed",
+            "building_blocks": {
+              "status": "approved",
+              "mapping": {}
+            },
+            "actor_mapping": {
+              "status": "approved",
+              "lanes": {}
+            },
+            "bpmn_generation": {
+              "status": "approved",
+              "file": "customer_onboarding.bpmn"
+            }
+          }
+        ]
+      }
+    },
+    "quality_assurance": {
+      "gatekeeper": {
+        "status": "in_progress",
+        "qa_results": [
+          {
+            "subprocess_id": "1",
+            "checked_at": "2025-09-08T09:43:47.422Z",
+            "final_assessment": {
+              "verdict": "pass",
+              "risk_level": "low"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "updatedAt": "2025-09-08T09:43:47.422Z"
+}
