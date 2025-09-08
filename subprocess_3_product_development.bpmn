@@ -1,0 +1,619 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_ProductDevelopment"
+                  targetNamespace="http://jtbank.cz/bpmn">
+  
+  <bpmn:collaboration id="Collaboration_ProductDevelopment">
+    <bpmn:participant id="Pool_ProductDevelopment" name="Product Development Process" processRef="Process_ProductDevelopment"/>
+  </bpmn:collaboration>
+  
+  <bpmn:process id="Process_ProductDevelopment" isExecutable="true">
+    <!-- Lanes -->
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_ODIC" name="ODIC">
+        <bpmn:flowNodeRef>start_development</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_risk_analysis</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_define_target_market</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_distribution_strategy</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_create_kid</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_create_prospectus</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_create_documentation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>gateway_documentation_complete</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_review_documentation</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_IT" name="IT">
+        <bpmn:flowNodeRef>task_system_analysis</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_implement_system</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_system_testing</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>gateway_system_ready</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_fix_issues</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Compliance" name="Compliance">
+        <bpmn:flowNodeRef>task_compliance_check</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>gateway_compliance_ok</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_request_changes</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_System" name="System">
+        <bpmn:flowNodeRef>end_development_complete</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_update_product_status</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="start_development" name="Zahájení vývoje produktu">
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- ODIC Tasks -->
+    <bpmn:userTask id="task_risk_analysis" name="Provést analýzu rizik">
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_define_target_market" name="Definovat cílový trh">
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_distribution_strategy" name="Stanovit distribuční strategii">
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:parallelGateway id="gateway_parallel_development" name="Paralelní vývoj">
+      <bpmn:incoming>flow_4</bpmn:incoming>
+      <bpmn:outgoing>flow_to_it</bpmn:outgoing>
+      <bpmn:outgoing>flow_to_documentation</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    
+    <bpmn:userTask id="task_create_kid" name="Vytvořit KID">
+      <bpmn:incoming>flow_to_documentation</bpmn:incoming>
+      <bpmn:outgoing>flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_create_prospectus" name="Vytvořit prospekt">
+      <bpmn:incoming>flow_5</bpmn:incoming>
+      <bpmn:outgoing>flow_6</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_create_documentation" name="Vytvořit další dokumentaci">
+      <bpmn:incoming>flow_6</bpmn:incoming>
+      <bpmn:incoming>flow_rework_docs</bpmn:incoming>
+      <bpmn:outgoing>flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:exclusiveGateway id="gateway_documentation_complete" name="Dokumentace kompletní?">
+      <bpmn:incoming>flow_7</bpmn:incoming>
+      <bpmn:outgoing>flow_docs_ok</bpmn:outgoing>
+      <bpmn:outgoing>flow_docs_incomplete</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:userTask id="task_review_documentation" name="Přepracovat dokumentaci">
+      <bpmn:incoming>flow_docs_incomplete</bpmn:incoming>
+      <bpmn:outgoing>flow_rework_docs</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- IT Tasks -->
+    <bpmn:userTask id="task_system_analysis" name="Analýza systémových požadavků">
+      <bpmn:incoming>flow_to_it</bpmn:incoming>
+      <bpmn:outgoing>flow_8</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_implement_system" name="Implementace do systému">
+      <bpmn:incoming>flow_8</bpmn:incoming>
+      <bpmn:incoming>flow_fix_done</bpmn:incoming>
+      <bpmn:outgoing>flow_9</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_system_testing" name="Testování systému">
+      <bpmn:incoming>flow_9</bpmn:incoming>
+      <bpmn:outgoing>flow_10</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:exclusiveGateway id="gateway_system_ready" name="Systém připraven?">
+      <bpmn:incoming>flow_10</bpmn:incoming>
+      <bpmn:outgoing>flow_system_ok</bpmn:outgoing>
+      <bpmn:outgoing>flow_system_issues</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:userTask id="task_fix_issues" name="Opravit chyby">
+      <bpmn:incoming>flow_system_issues</bpmn:incoming>
+      <bpmn:outgoing>flow_fix_done</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Parallel Gateway Join -->
+    <bpmn:parallelGateway id="gateway_join_development" name="Spojení vývoje">
+      <bpmn:incoming>flow_docs_ok</bpmn:incoming>
+      <bpmn:incoming>flow_system_ok</bpmn:incoming>
+      <bpmn:outgoing>flow_11</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    
+    <!-- Compliance Tasks -->
+    <bpmn:userTask id="task_compliance_check" name="Kontrola souladu s předpisy">
+      <bpmn:incoming>flow_11</bpmn:incoming>
+      <bpmn:outgoing>flow_12</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:exclusiveGateway id="gateway_compliance_ok" name="Compliance OK?">
+      <bpmn:incoming>flow_12</bpmn:incoming>
+      <bpmn:outgoing>flow_compliance_ok</bpmn:outgoing>
+      <bpmn:outgoing>flow_compliance_issues</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:userTask id="task_request_changes" name="Požadovat změny">
+      <bpmn:incoming>flow_compliance_issues</bpmn:incoming>
+      <bpmn:outgoing>flow_back_to_odic</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- System Tasks -->
+    <bpmn:serviceTask id="task_update_product_status" name="Aktualizovat stav produktu">
+      <bpmn:incoming>flow_compliance_ok</bpmn:incoming>
+      <bpmn:outgoing>flow_13</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="end_development_complete" name="Vývoj dokončen">
+      <bpmn:incoming>flow_13</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows -->
+    <bpmn:sequenceFlow id="flow_1" sourceRef="start_development" targetRef="task_risk_analysis"/>
+    <bpmn:sequenceFlow id="flow_2" sourceRef="task_risk_analysis" targetRef="task_define_target_market"/>
+    <bpmn:sequenceFlow id="flow_3" sourceRef="task_define_target_market" targetRef="task_distribution_strategy"/>
+    <bpmn:sequenceFlow id="flow_4" sourceRef="task_distribution_strategy" targetRef="gateway_parallel_development"/>
+    <bpmn:sequenceFlow id="flow_to_it" sourceRef="gateway_parallel_development" targetRef="task_system_analysis"/>
+    <bpmn:sequenceFlow id="flow_to_documentation" sourceRef="gateway_parallel_development" targetRef="task_create_kid"/>
+    <bpmn:sequenceFlow id="flow_5" sourceRef="task_create_kid" targetRef="task_create_prospectus"/>
+    <bpmn:sequenceFlow id="flow_6" sourceRef="task_create_prospectus" targetRef="task_create_documentation"/>
+    <bpmn:sequenceFlow id="flow_7" sourceRef="task_create_documentation" targetRef="gateway_documentation_complete"/>
+    <bpmn:sequenceFlow id="flow_docs_ok" name="Ano" sourceRef="gateway_documentation_complete" targetRef="gateway_join_development"/>
+    <bpmn:sequenceFlow id="flow_docs_incomplete" name="Ne" sourceRef="gateway_documentation_complete" targetRef="task_review_documentation"/>
+    <bpmn:sequenceFlow id="flow_rework_docs" sourceRef="task_review_documentation" targetRef="task_create_documentation"/>
+    <bpmn:sequenceFlow id="flow_8" sourceRef="task_system_analysis" targetRef="task_implement_system"/>
+    <bpmn:sequenceFlow id="flow_9" sourceRef="task_implement_system" targetRef="task_system_testing"/>
+    <bpmn:sequenceFlow id="flow_10" sourceRef="task_system_testing" targetRef="gateway_system_ready"/>
+    <bpmn:sequenceFlow id="flow_system_ok" name="Ano" sourceRef="gateway_system_ready" targetRef="gateway_join_development"/>
+    <bpmn:sequenceFlow id="flow_system_issues" name="Ne" sourceRef="gateway_system_ready" targetRef="task_fix_issues"/>
+    <bpmn:sequenceFlow id="flow_fix_done" sourceRef="task_fix_issues" targetRef="task_implement_system"/>
+    <bpmn:sequenceFlow id="flow_11" sourceRef="gateway_join_development" targetRef="task_compliance_check"/>
+    <bpmn:sequenceFlow id="flow_12" sourceRef="task_compliance_check" targetRef="gateway_compliance_ok"/>
+    <bpmn:sequenceFlow id="flow_compliance_ok" name="Ano" sourceRef="gateway_compliance_ok" targetRef="task_update_product_status"/>
+    <bpmn:sequenceFlow id="flow_compliance_issues" name="Ne" sourceRef="gateway_compliance_ok" targetRef="task_request_changes"/>
+    <bpmn:sequenceFlow id="flow_back_to_odic" sourceRef="task_request_changes" targetRef="task_create_documentation"/>
+    <bpmn:sequenceFlow id="flow_13" sourceRef="task_update_product_status" targetRef="end_development_complete"/>
+    
+    <!-- Data Objects -->
+    <bpmn:dataObjectReference id="data_risk_analysis" name="Analýza rizik" dataObjectRef="DataObject_1"/>
+    <bpmn:dataObject id="DataObject_1"/>
+    
+    <bpmn:dataObjectReference id="data_target_market" name="Definice cílového trhu" dataObjectRef="DataObject_2"/>
+    <bpmn:dataObject id="DataObject_2"/>
+    
+    <bpmn:dataObjectReference id="data_distribution_strategy" name="Distribuční strategie" dataObjectRef="DataObject_3"/>
+    <bpmn:dataObject id="DataObject_3"/>
+    
+    <bpmn:dataObjectReference id="data_kid_document" name="KID dokument" dataObjectRef="DataObject_4"/>
+    <bpmn:dataObject id="DataObject_4"/>
+    
+    <bpmn:dataObjectReference id="data_prospectus" name="Prospekt" dataObjectRef="DataObject_5"/>
+    <bpmn:dataObject id="DataObject_5"/>
+    
+    <bpmn:dataObjectReference id="data_system_specification" name="Systémová specifikace" dataObjectRef="DataObject_6"/>
+    <bpmn:dataObject id="DataObject_6"/>
+    
+    <bpmn:dataObjectReference id="data_test_results" name="Výsledky testů" dataObjectRef="DataObject_7"/>
+    <bpmn:dataObject id="DataObject_7"/>
+    
+    <!-- Data Associations -->
+    <bpmn:dataOutputAssociation id="data_out_1">
+      <bpmn:sourceRef>task_risk_analysis</bpmn:sourceRef>
+      <bpmn:targetRef>data_risk_analysis</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_2">
+      <bpmn:sourceRef>task_define_target_market</bpmn:sourceRef>
+      <bpmn:targetRef>data_target_market</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_3">
+      <bpmn:sourceRef>task_distribution_strategy</bpmn:sourceRef>
+      <bpmn:targetRef>data_distribution_strategy</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_4">
+      <bpmn:sourceRef>task_create_kid</bpmn:sourceRef>
+      <bpmn:targetRef>data_kid_document</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_5">
+      <bpmn:sourceRef>task_create_prospectus</bpmn:sourceRef>
+      <bpmn:targetRef>data_prospectus</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_6">
+      <bpmn:sourceRef>task_system_analysis</bpmn:sourceRef>
+      <bpmn:targetRef>data_system_specification</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_7">
+      <bpmn:sourceRef>task_system_testing</bpmn:sourceRef>
+      <bpmn:targetRef>data_test_results</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+  </bpmn:process>
+  
+  <!-- DI Section -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_ProductDevelopment">
+      <bpmndi:BPMNShape id="Pool_ProductDevelopment_di" bpmnElement="Pool_ProductDevelopment" isHorizontal="true">
+        <dc:Bounds x="100" y="50" width="2000" height="600"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Lanes -->
+      <bpmndi:BPMNShape id="Lane_ODIC_di" bpmnElement="Lane_ODIC" isHorizontal="true">
+        <dc:Bounds x="130" y="50" width="1970" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_IT_di" bpmnElement="Lane_IT" isHorizontal="true">
+        <dc:Bounds x="130" y="200" width="1970" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_Compliance_di" bpmnElement="Lane_Compliance" isHorizontal="true">
+        <dc:Bounds x="130" y="350" width="1970" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_System_di" bpmnElement="Lane_System" isHorizontal="true">
+        <dc:Bounds x="130" y="500" width="1970" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Start Event -->
+      <bpmndi:BPMNShape id="start_development_di" bpmnElement="start_development">
+        <dc:Bounds x="180" y="110" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="155" y="153" width="86" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ODIC Lane Elements -->
+      <bpmndi:BPMNShape id="task_risk_analysis_di" bpmnElement="task_risk_analysis">
+        <dc:Bounds x="280" y="88" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_define_target_market_di" bpmnElement="task_define_target_market">
+        <dc:Bounds x="440" y="88" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_distribution_strategy_di" bpmnElement="task_distribution_strategy">
+        <dc:Bounds x="600" y="88" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="gateway_parallel_development_di" bpmnElement="gateway_parallel_development">
+        <dc:Bounds x="765" y="103" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="748" y="73" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_create_kid_di" bpmnElement="task_create_kid">
+        <dc:Bounds x="880" y="88" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_create_prospectus_di" bpmnElement="task_create_prospectus">
+        <dc:Bounds x="1040" y="88" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_create_documentation_di" bpmnElement="task_create_documentation">
+        <dc:Bounds x="1200" y="88" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="gateway_documentation_complete_di" bpmnElement="gateway_documentation_complete" isMarkerVisible="true">
+        <dc:Bounds x="1365" y="103" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1345" y="73" width="90" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_review_documentation_di" bpmnElement="task_review_documentation">
+        <dc:Bounds x="1340" y="160" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- IT Lane Elements -->
+      <bpmndi:BPMNShape id="task_system_analysis_di" bpmnElement="task_system_analysis">
+        <dc:Bounds x="880" y="235" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_implement_system_di" bpmnElement="task_implement_system">
+        <dc:Bounds x="1040" y="235" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_system_testing_di" bpmnElement="task_system_testing">
+        <dc:Bounds x="1200" y="235" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="gateway_system_ready_di" bpmnElement="gateway_system_ready" isMarkerVisible="true">
+        <dc:Bounds x="1365" y="250" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1345" y="220" width="90" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_fix_issues_di" bpmnElement="task_fix_issues">
+        <dc:Bounds x="1340" y="310" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Parallel Gateway Join -->
+      <bpmndi:BPMNShape id="gateway_join_development_di" bpmnElement="gateway_join_development">
+        <dc:Bounds x="1485" y="175" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1468" y="145" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Compliance Lane Elements -->
+      <bpmndi:BPMNShape id="task_compliance_check_di" bpmnElement="task_compliance_check">
+        <dc:Bounds x="1580" y="385" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="gateway_compliance_ok_di" bpmnElement="gateway_compliance_ok" isMarkerVisible="true">
+        <dc:Bounds x="1745" y="400" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1725" y="370" width="90" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_request_changes_di" bpmnElement="task_request_changes">
+        <dc:Bounds x="1720" y="470" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- System Lane Elements -->
+      <bpmndi:BPMNShape id="task_update_product_status_di" bpmnElement="task_update_product_status">
+        <dc:Bounds x="1860" y="535" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- End Event -->
+      <bpmndi:BPMNShape id="end_development_complete_di" bpmnElement="end_development_complete">
+        <dc:Bounds x="2020" y="557" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2000" y="600" width="76" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Data Objects -->
+      <bpmndi:BPMNShape id="data_risk_analysis_di" bpmnElement="data_risk_analysis">
+        <dc:Bounds x="310" y="20" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="286" y="5" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_target_market_di" bpmnElement="data_target_market">
+        <dc:Bounds x="470" y="20" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="446" y="5" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_distribution_strategy_di" bpmnElement="data_distribution_strategy">
+        <dc:Bounds x="630" y="20" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="606" y="5" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_kid_document_di" bpmnElement="data_kid_document">
+        <dc:Bounds x="910" y="20" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="886" y="5" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_prospectus_di" bpmnElement="data_prospectus">
+        <dc:Bounds x="1070" y="20" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1046" y="5" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_system_specification_di" bpmnElement="data_system_specification">
+        <dc:Bounds x="910" y="180" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="886" y="160" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_test_results_di" bpmnElement="data_test_results">
+        <dc:Bounds x="1230" y="180" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1206" y="160" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence Flows -->
+      <bpmndi:BPMNEdge id="flow_1_di" bpmnElement="flow_1">
+        <di:waypoint x="216" y="128"/>
+        <di:waypoint x="280" y="128"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_2_di" bpmnElement="flow_2">
+        <di:waypoint x="380" y="128"/>
+        <di:waypoint x="440" y="128"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_3_di" bpmnElement="flow_3">
+        <di:waypoint x="540" y="128"/>
+        <di:waypoint x="600" y="128"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_4_di" bpmnElement="flow_4">
+        <di:waypoint x="700" y="128"/>
+        <di:waypoint x="765" y="128"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_to_it_di" bpmnElement="flow_to_it">
+        <di:waypoint x="790" y="153"/>
+        <di:waypoint x="790" y="275"/>
+        <di:waypoint x="880" y="275"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_to_documentation_di" bpmnElement="flow_to_documentation">
+        <di:waypoint x="815" y="128"/>
+        <di:waypoint x="880" y="128"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_5_di" bpmnElement="flow_5">
+        <di:waypoint x="980" y="128"/>
+        <di:waypoint x="1040" y="128"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_6_di" bpmnElement="flow_6">
+        <di:waypoint x="1140" y="128"/>
+        <di:waypoint x="1200" y="128"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_7_di" bpmnElement="flow_7">
+        <di:waypoint x="1300" y="128"/>
+        <di:waypoint x="1365" y="128"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_docs_ok_di" bpmnElement="flow_docs_ok">
+        <di:waypoint x="1415" y="128"/>
+        <di:waypoint x="1450" y="128"/>
+        <di:waypoint x="1450" y="200"/>
+        <di:waypoint x="1485" y="200"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1458" y="161" width="20" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_docs_incomplete_di" bpmnElement="flow_docs_incomplete">
+        <di:waypoint x="1390" y="153"/>
+        <di:waypoint x="1390" y="160"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1398" y="153" width="15" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_rework_docs_di" bpmnElement="flow_rework_docs">
+        <di:waypoint x="1340" y="200"/>
+        <di:waypoint x="1250" y="200"/>
+        <di:waypoint x="1250" y="168"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_8_di" bpmnElement="flow_8">
+        <di:waypoint x="980" y="275"/>
+        <di:waypoint x="1040" y="275"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_9_di" bpmnElement="flow_9">
+        <di:waypoint x="1140" y="275"/>
+        <di:waypoint x="1200" y="275"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_10_di" bpmnElement="flow_10">
+        <di:waypoint x="1300" y="275"/>
+        <di:waypoint x="1365" y="275"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_system_ok_di" bpmnElement="flow_system_ok">
+        <di:waypoint x="1415" y="275"/>
+        <di:waypoint x="1450" y="275"/>
+        <di:waypoint x="1450" y="200"/>
+        <di:waypoint x="1485" y="200"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1458" y="235" width="20" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_system_issues_di" bpmnElement="flow_system_issues">
+        <di:waypoint x="1390" y="300"/>
+        <di:waypoint x="1390" y="310"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1398" y="302" width="15" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_fix_done_di" bpmnElement="flow_fix_done">
+        <di:waypoint x="1340" y="350"/>
+        <di:waypoint x="1090" y="350"/>
+        <di:waypoint x="1090" y="315"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_11_di" bpmnElement="flow_11">
+        <di:waypoint x="1510" y="225"/>
+        <di:waypoint x="1510" y="425"/>
+        <di:waypoint x="1580" y="425"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_12_di" bpmnElement="flow_12">
+        <di:waypoint x="1680" y="425"/>
+        <di:waypoint x="1745" y="425"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_compliance_ok_di" bpmnElement="flow_compliance_ok">
+        <di:waypoint x="1770" y="450"/>
+        <di:waypoint x="1770" y="575"/>
+        <di:waypoint x="1860" y="575"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1778" y="510" width="20" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_compliance_issues_di" bpmnElement="flow_compliance_issues">
+        <di:waypoint x="1770" y="450"/>
+        <di:waypoint x="1770" y="470"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1778" y="457" width="15" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_back_to_odic_di" bpmnElement="flow_back_to_odic">
+        <di:waypoint x="1720" y="510"/>
+        <di:waypoint x="1250" y="510"/>
+        <di:waypoint x="1250" y="168"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_13_di" bpmnElement="flow_13">
+        <di:waypoint x="1960" y="575"/>
+        <di:waypoint x="2020" y="575"/>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Data Associations -->
+      <bpmndi:BPMNEdge id="data_out_1_di" bpmnElement="data_out_1">
+        <di:waypoint x="330" y="88"/>
+        <di:waypoint x="328" y="70"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_2_di" bpmnElement="data_out_2">
+        <di:waypoint x="490" y="88"/>
+        <di:waypoint x="488" y="70"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_3_di" bpmnElement="data_out_3">
+        <di:waypoint x="650" y="88"/>
+        <di:waypoint x="648" y="70"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_4_di" bpmnElement="data_out_4">
+        <di:waypoint x="930" y="88"/>
+        <di:waypoint x="928" y="70"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_5_di" bpmnElement="data_out_5">
+        <di:waypoint x="1090" y="88"/>
+        <di:waypoint x="1088" y="70"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_6_di" bpmnElement="data_out_6">
+        <di:waypoint x="930" y="235"/>
+        <di:waypoint x="928" y="230"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_7_di" bpmnElement="data_out_7">
+        <di:waypoint x="1250" y="235"/>
+        <di:waypoint x="1248" y="230"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

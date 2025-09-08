@@ -1,0 +1,713 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_ProductWithdrawal"
+                  targetNamespace="http://jtbank.cz/bpmn">
+  
+  <bpmn:collaboration id="Collaboration_ProductWithdrawal">
+    <bpmn:participant id="Pool_ProductWithdrawal" name="Product Withdrawal Process" processRef="Process_ProductWithdrawal"/>
+  </bpmn:collaboration>
+  
+  <bpmn:process id="Process_ProductWithdrawal" isExecutable="true">
+    <!-- Lanes -->
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_Client" name="Klient">
+        <bpmn:flowNodeRef>start_client_complaint</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_review_withdrawal_communication</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_ODIC" name="ODIC">
+        <bpmn:flowNodeRef>start_monitoring_trigger</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>start_regulatory_change</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>start_commercial_decision</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_assess_withdrawal_reason</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>gateway_withdrawal_type</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_immediate_withdrawal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_plan_gradual_withdrawal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_prepare_client_communication</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_handle_existing_positions</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_prepare_archive_documentation</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_VIN" name="VIN Committee">
+        <bpmn:flowNodeRef>task_approve_withdrawal_plan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>gateway_vin_approval</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_request_plan_revision</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_System" name="System">
+        <bpmn:flowNodeRef>task_notify_clients</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_notify_regulators</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_update_systems</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_deactivate_product</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_archive_product_data</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>end_withdrawal_complete</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>boundary_withdrawal_deadline</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    
+    <!-- Start Events -->
+    <bpmn:startEvent id="start_client_complaint" name="Stížnost klienta">
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:startEvent id="start_monitoring_trigger" name="Trigger z monitoringu">
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:startEvent id="start_regulatory_change" name="Regulatorní změna">
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:startEvent id="start_commercial_decision" name="Komerční rozhodnutí">
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Exclusive Gateway to Join Start Events -->
+    <bpmn:exclusiveGateway id="gateway_join_triggers" name="Spojení triggerů">
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+      <bpmn:outgoing>flow_5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <!-- ODIC Tasks -->
+    <bpmn:userTask id="task_assess_withdrawal_reason" name="Posoudit důvod stažení">
+      <bpmn:incoming>flow_5</bpmn:incoming>
+      <bpmn:incoming>flow_revision_requested</bpmn:incoming>
+      <bpmn:outgoing>flow_6</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:exclusiveGateway id="gateway_withdrawal_type" name="Typ stažení">
+      <bpmn:incoming>flow_6</bpmn:incoming>
+      <bpmn:outgoing>flow_immediate</bpmn:outgoing>
+      <bpmn:outgoing>flow_gradual</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:userTask id="task_immediate_withdrawal" name="Okamžité stažení">
+      <bpmn:incoming>flow_immediate</bpmn:incoming>
+      <bpmn:outgoing>flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_plan_gradual_withdrawal" name="Naplánovat postupné stažení">
+      <bpmn:incoming>flow_gradual</bpmn:incoming>
+      <bpmn:outgoing>flow_8</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Exclusive Gateway Join for Withdrawal Types -->
+    <bpmn:exclusiveGateway id="gateway_join_withdrawal_types" name="Spojení typů stažení">
+      <bpmn:incoming>flow_7</bpmn:incoming>
+      <bpmn:incoming>flow_8</bpmn:incoming>
+      <bpmn:outgoing>flow_9</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <!-- VIN Tasks -->
+    <bpmn:userTask id="task_approve_withdrawal_plan" name="Schválit plán stažení">
+      <bpmn:incoming>flow_9</bpmn:incoming>
+      <bpmn:outgoing>flow_10</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:exclusiveGateway id="gateway_vin_approval" name="Schválení VIN">
+      <bpmn:incoming>flow_10</bpmn:incoming>
+      <bpmn:outgoing>flow_approved</bpmn:outgoing>
+      <bpmn:outgoing>flow_revision_needed</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:userTask id="task_request_plan_revision" name="Požadovat revizi plánu">
+      <bpmn:incoming>flow_revision_needed</bpmn:incoming>
+      <bpmn:outgoing>flow_revision_requested</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- ODIC Tasks (continued) -->
+    <bpmn:userTask id="task_prepare_client_communication" name="Připravit komunikaci s klienty">
+      <bpmn:incoming>flow_approved</bpmn:incoming>
+      <bpmn:outgoing>flow_11</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_handle_existing_positions" name="Zpracovat stávající pozice">
+      <bpmn:incoming>flow_11</bpmn:incoming>
+      <bpmn:outgoing>flow_12</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_prepare_archive_documentation" name="Připravit archivní dokumentaci">
+      <bpmn:incoming>flow_12</bpmn:incoming>
+      <bpmn:outgoing>flow_13</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Parallel Gateway for Notifications -->
+    <bpmn:parallelGateway id="gateway_parallel_notifications" name="Paralelní notifikace">
+      <bpmn:incoming>flow_13</bpmn:incoming>
+      <bpmn:outgoing>flow_to_clients</bpmn:outgoing>
+      <bpmn:outgoing>flow_to_regulators</bpmn:outgoing>
+      <bpmn:outgoing>flow_to_systems</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    
+    <!-- System Tasks -->
+    <bpmn:serviceTask id="task_notify_clients" name="Notifikovat klienty">
+      <bpmn:incoming>flow_to_clients</bpmn:incoming>
+      <bpmn:outgoing>flow_14</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:serviceTask id="task_notify_regulators" name="Notifikovat regulátory">
+      <bpmn:incoming>flow_to_regulators</bpmn:incoming>
+      <bpmn:outgoing>flow_15</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:serviceTask id="task_update_systems" name="Aktualizovat systémy">
+      <bpmn:incoming>flow_to_systems</bpmn:incoming>
+      <bpmn:outgoing>flow_16</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Client Task -->
+    <bpmn:userTask id="task_review_withdrawal_communication" name="Přezkoumat komunikaci o stažení">
+      <bpmn:incoming>flow_14</bpmn:incoming>
+      <bpmn:outgoing>flow_17</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Parallel Gateway Join -->
+    <bpmn:parallelGateway id="gateway_join_notifications" name="Spojení notifikací">
+      <bpmn:incoming>flow_17</bpmn:incoming>
+      <bpmn:incoming>flow_15</bpmn:incoming>
+      <bpmn:incoming>flow_16</bpmn:incoming>
+      <bpmn:outgoing>flow_18</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    
+    <bpmn:serviceTask id="task_deactivate_product" name="Deaktivovat produkt">
+      <bpmn:incoming>flow_18</bpmn:incoming>
+      <bpmn:outgoing>flow_19</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:serviceTask id="task_archive_product_data" name="Archivovat data produktu">
+      <bpmn:incoming>flow_19</bpmn:incoming>
+      <bpmn:outgoing>flow_20</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- Boundary Event -->
+    <bpmn:boundaryEvent id="boundary_withdrawal_deadline" name="Deadline stažení" attachedToRef="task_handle_existing_positions">
+      <bpmn:outgoing>flow_deadline</bpmn:outgoing>
+      <bpmn:timerEventDefinition>
+        <bpmn:timeDuration>P30D</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    
+    <!-- End Event -->
+    <bpmn:endEvent id="end_withdrawal_complete" name="Stažení dokončeno">
+      <bpmn:incoming>flow_20</bpmn:incoming>
+      <bpmn:incoming>flow_deadline</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows -->
+    <bpmn:sequenceFlow id="flow_1" sourceRef="start_client_complaint" targetRef="gateway_join_triggers"/>
+    <bpmn:sequenceFlow id="flow_2" sourceRef="start_monitoring_trigger" targetRef="gateway_join_triggers"/>
+    <bpmn:sequenceFlow id="flow_3" sourceRef="start_regulatory_change" targetRef="gateway_join_triggers"/>
+    <bpmn:sequenceFlow id="flow_4" sourceRef="start_commercial_decision" targetRef="gateway_join_triggers"/>
+    <bpmn:sequenceFlow id="flow_5" sourceRef="gateway_join_triggers" targetRef="task_assess_withdrawal_reason"/>
+    <bpmn:sequenceFlow id="flow_6" sourceRef="task_assess_withdrawal_reason" targetRef="gateway_withdrawal_type"/>
+    <bpmn:sequenceFlow id="flow_immediate" name="Okamžité" sourceRef="gateway_withdrawal_type" targetRef="task_immediate_withdrawal"/>
+    <bpmn:sequenceFlow id="flow_gradual" name="Postupné" sourceRef="gateway_withdrawal_type" targetRef="task_plan_gradual_withdrawal"/>
+    <bpmn:sequenceFlow id="flow_7" sourceRef="task_immediate_withdrawal" targetRef="gateway_join_withdrawal_types"/>
+    <bpmn:sequenceFlow id="flow_8" sourceRef="task_plan_gradual_withdrawal" targetRef="gateway_join_withdrawal_types"/>
+    <bpmn:sequenceFlow id="flow_9" sourceRef="gateway_join_withdrawal_types" targetRef="task_approve_withdrawal_plan"/>
+    <bpmn:sequenceFlow id="flow_10" sourceRef="task_approve_withdrawal_plan" targetRef="gateway_vin_approval"/>
+    <bpmn:sequenceFlow id="flow_approved" name="Schváleno" sourceRef="gateway_vin_approval" targetRef="task_prepare_client_communication"/>
+    <bpmn:sequenceFlow id="flow_revision_needed" name="Revize" sourceRef="gateway_vin_approval" targetRef="task_request_plan_revision"/>
+    <bpmn:sequenceFlow id="flow_revision_requested" sourceRef="task_request_plan_revision" targetRef="task_assess_withdrawal_reason"/>
+    <bpmn:sequenceFlow id="flow_11" sourceRef="task_prepare_client_communication" targetRef="task_handle_existing_positions"/>
+    <bpmn:sequenceFlow id="flow_12" sourceRef="task_handle_existing_positions" targetRef="task_prepare_archive_documentation"/>
+    <bpmn:sequenceFlow id="flow_13" sourceRef="task_prepare_archive_documentation" targetRef="gateway_parallel_notifications"/>
+    <bpmn:sequenceFlow id="flow_to_clients" sourceRef="gateway_parallel_notifications" targetRef="task_notify_clients"/>
+    <bpmn:sequenceFlow id="flow_to_regulators" sourceRef="gateway_parallel_notifications" targetRef="task_notify_regulators"/>
+    <bpmn:sequenceFlow id="flow_to_systems" sourceRef="gateway_parallel_notifications" targetRef="task_update_systems"/>
+    <bpmn:sequenceFlow id="flow_14" sourceRef="task_notify_clients" targetRef="task_review_withdrawal_communication"/>
+    <bpmn:sequenceFlow id="flow_15" sourceRef="task_notify_regulators" targetRef="gateway_join_notifications"/>
+    <bpmn:sequenceFlow id="flow_16" sourceRef="task_update_systems" targetRef="gateway_join_notifications"/>
+    <bpmn:sequenceFlow id="flow_17" sourceRef="task_review_withdrawal_communication" targetRef="gateway_join_notifications"/>
+    <bpmn:sequenceFlow id="flow_18" sourceRef="gateway_join_notifications" targetRef="task_deactivate_product"/>
+    <bpmn:sequenceFlow id="flow_19" sourceRef="task_deactivate_product" targetRef="task_archive_product_data"/>
+    <bpmn:sequenceFlow id="flow_20" sourceRef="task_archive_product_data" targetRef="end_withdrawal_complete"/>
+    <bpmn:sequenceFlow id="flow_deadline" sourceRef="boundary_withdrawal_deadline" targetRef="end_withdrawal_complete"/>
+    
+    <!-- Data Objects -->
+    <bpmn:dataObjectReference id="data_withdrawal_assessment" name="Posouzení stažení" dataObjectRef="DataObject_1"/>
+    <bpmn:dataObject id="DataObject_1"/>
+    
+    <bpmn:dataObjectReference id="data_withdrawal_plan" name="Plán stažení" dataObjectRef="DataObject_2"/>
+    <bpmn:dataObject id="DataObject_2"/>
+    
+    <bpmn:dataObjectReference id="data_client_communication" name="Komunikace s klienty" dataObjectRef="DataObject_3"/>
+    <bpmn:dataObject id="DataObject_3"/>
+    
+    <bpmn:dataObjectReference id="data_position_handling" name="Zpracování pozic" dataObjectRef="DataObject_4"/>
+    <bpmn:dataObject id="DataObject_4"/>
+    
+    <bpmn:dataObjectReference id="data_archive_documentation" name="Archivní dokumentace" dataObjectRef="DataObject_5"/>
+    <bpmn:dataObject id="DataObject_5"/>
+    
+    <bpmn:dataObjectReference id="data_regulatory_notifications" name="Regulatorní notifikace" dataObjectRef="DataObject_6"/>
+    <bpmn:dataObject id="DataObject_6"/>
+    
+    <!-- Data Associations -->
+    <bpmn:dataOutputAssociation id="data_out_1">
+      <bpmn:sourceRef>task_assess_withdrawal_reason</bpmn:sourceRef>
+      <bpmn:targetRef>data_withdrawal_assessment</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_2">
+      <bpmn:sourceRef>gateway_join_withdrawal_types</bpmn:sourceRef>
+      <bpmn:targetRef>data_withdrawal_plan</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_3">
+      <bpmn:sourceRef>task_prepare_client_communication</bpmn:sourceRef>
+      <bpmn:targetRef>data_client_communication</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_4">
+      <bpmn:sourceRef>task_handle_existing_positions</bpmn:sourceRef>
+      <bpmn:targetRef>data_position_handling</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_5">
+      <bpmn:sourceRef>task_prepare_archive_documentation</bpmn:sourceRef>
+      <bpmn:targetRef>data_archive_documentation</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_6">
+      <bpmn:sourceRef>task_notify_regulators</bpmn:sourceRef>
+      <bpmn:targetRef>data_regulatory_notifications</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+  </bpmn:process>
+  
+  <!-- DI Section -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_ProductWithdrawal">
+      <bpmndi:BPMNShape id="Pool_ProductWithdrawal_di" bpmnElement="Pool_ProductWithdrawal" isHorizontal="true">
+        <dc:Bounds x="100" y="50" width="2600" height="700"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Lanes -->
+      <bpmndi:BPMNShape id="Lane_Client_di" bpmnElement="Lane_Client" isHorizontal="true">
+        <dc:Bounds x="130" y="50" width="2570" height="120"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_ODIC_di" bpmnElement="Lane_ODIC" isHorizontal="true">
+        <dc:Bounds x="130" y="170" width="2570" height="230"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_VIN_di" bpmnElement="Lane_VIN" isHorizontal="true">
+        <dc:Bounds x="130" y="400" width="2570" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_System_di" bpmnElement="Lane_System" isHorizontal="true">
+        <dc:Bounds x="130" y="550" width="2570" height="200"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Start Events -->
+      <bpmndi:BPMNShape id="start_client_complaint_di" bpmnElement="start_client_complaint">
+        <dc:Bounds x="180" y="92" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="160" y="135" width="76" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="start_monitoring_trigger_di" bpmnElement="start_monitoring_trigger">
+        <dc:Bounds x="180" y="190" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="155" y="233" width="86" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="start_regulatory_change_di" bpmnElement="start_regulatory_change">
+        <dc:Bounds x="180" y="240" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="155" y="283" width="86" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="start_commercial_decision_di" bpmnElement="start_commercial_decision">
+        <dc:Bounds x="180" y="290" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="155" y="333" width="86" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Gateway Join Triggers -->
+      <bpmndi:BPMNShape id="gateway_join_triggers_di" bpmnElement="gateway_join_triggers">
+        <dc:Bounds x="285" y="233" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="268" y="203" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ODIC Lane Elements -->
+      <bpmndi:BPMNShape id="task_assess_withdrawal_reason_di" bpmnElement="task_assess_withdrawal_reason">
+        <dc:Bounds x="400" y="218" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="gateway_withdrawal_type_di" bpmnElement="gateway_withdrawal_type" isMarkerVisible="true">
+        <dc:Bounds x="565" y="233" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="545" y="203" width="90" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_immediate_withdrawal_di" bpmnElement="task_immediate_withdrawal">
+        <dc:Bounds x="680" y="188" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_plan_gradual_withdrawal_di" bpmnElement="task_plan_gradual_withdrawal">
+        <dc:Bounds x="680" y="288" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="gateway_join_withdrawal_types_di" bpmnElement="gateway_join_withdrawal_types">
+        <dc:Bounds x="845" y="233" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="828" y="203" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_prepare_client_communication_di" bpmnElement="task_prepare_client_communication">
+        <dc:Bounds x="1160" y="218" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_handle_existing_positions_di" bpmnElement="task_handle_existing_positions">
+        <dc:Bounds x="1320" y="218" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_prepare_archive_documentation_di" bpmnElement="task_prepare_archive_documentation">
+        <dc:Bounds x="1480" y="218" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- VIN Lane Elements -->
+      <bpmndi:BPMNShape id="task_approve_withdrawal_plan_di" bpmnElement="task_approve_withdrawal_plan">
+        <dc:Bounds x="820" y="430" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="gateway_vin_approval_di" bpmnElement="gateway_vin_approval" isMarkerVisible="true">
+        <dc:Bounds x="985" y="445" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="965" y="415" width="90" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_request_plan_revision_di" bpmnElement="task_request_plan_revision">
+        <dc:Bounds x="960" y="510" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Parallel Gateway for Notifications -->
+      <bpmndi:BPMNShape id="gateway_parallel_notifications_di" bpmnElement="gateway_parallel_notifications">
+        <dc:Bounds x="1645" y="233" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1628" y="203" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- System Lane Elements -->
+      <bpmndi:BPMNShape id="task_notify_clients_di" bpmnElement="task_notify_clients">
+        <dc:Bounds x="1800" y="580" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_notify_regulators_di" bpmnElement="task_notify_regulators">
+        <dc:Bounds x="1800" y="670" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_update_systems_di" bpmnElement="task_update_systems">
+        <dc:Bounds x="1960" y="580" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Client Task -->
+      <bpmndi:BPMNShape id="task_review_withdrawal_communication_di" bpmnElement="task_review_withdrawal_communication">
+        <dc:Bounds x="1800" y="70" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Parallel Gateway Join -->
+      <bpmndi:BPMNShape id="gateway_join_notifications_di" bpmnElement="gateway_join_notifications">
+        <dc:Bounds x="2125" y="595" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2108" y="565" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_deactivate_product_di" bpmnElement="task_deactivate_product">
+        <dc:Bounds x="2240" y="580" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_archive_product_data_di" bpmnElement="task_archive_product_data">
+        <dc:Bounds x="2400" y="580" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Boundary Event -->
+      <bpmndi:BPMNShape id="boundary_withdrawal_deadline_di" bpmnElement="boundary_withdrawal_deadline">
+        <dc:Bounds x="1402" y="280" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1380" y="323" width="80" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- End Event -->
+      <bpmndi:BPMNShape id="end_withdrawal_complete_di" bpmnElement="end_withdrawal_complete">
+        <dc:Bounds x="2582" y="602" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2562" y="645" width="76" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Data Objects -->
+      <bpmndi:BPMNShape id="data_withdrawal_assessment_di" bpmnElement="data_withdrawal_assessment">
+        <dc:Bounds x="430" y="140" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="406" y="120" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_withdrawal_plan_di" bpmnElement="data_withdrawal_plan">
+        <dc:Bounds x="875" y="140" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="851" y="120" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_client_communication_di" bpmnElement="data_client_communication">
+        <dc:Bounds x="1190" y="140" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1166" y="120" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_position_handling_di" bpmnElement="data_position_handling">
+        <dc:Bounds x="1350" y="140" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1326" y="120" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_archive_documentation_di" bpmnElement="data_archive_documentation">
+        <dc:Bounds x="1510" y="140" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1486" y="120" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_regulatory_notifications_di" bpmnElement="data_regulatory_notifications">
+        <dc:Bounds x="1830" y="750" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1806" y="725" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence Flows -->
+      <bpmndi:BPMNEdge id="flow_1_di" bpmnElement="flow_1">
+        <di:waypoint x="198" y="128"/>
+        <di:waypoint x="198" y="180"/>
+        <di:waypoint x="310" y="180"/>
+        <di:waypoint x="310" y="233"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_2_di" bpmnElement="flow_2">
+        <di:waypoint x="216" y="208"/>
+        <di:waypoint x="250" y="208"/>
+        <di:waypoint x="250" y="258"/>
+        <di:waypoint x="285" y="258"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_3_di" bpmnElement="flow_3">
+        <di:waypoint x="216" y="258"/>
+        <di:waypoint x="285" y="258"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_4_di" bpmnElement="flow_4">
+        <di:waypoint x="216" y="308"/>
+        <di:waypoint x="250" y="308"/>
+        <di:waypoint x="250" y="258"/>
+        <di:waypoint x="285" y="258"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_5_di" bpmnElement="flow_5">
+        <di:waypoint x="335" y="258"/>
+        <di:waypoint x="400" y="258"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_6_di" bpmnElement="flow_6">
+        <di:waypoint x="500" y="258"/>
+        <di:waypoint x="565" y="258"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_immediate_di" bpmnElement="flow_immediate">
+        <di:waypoint x="590" y="233"/>
+        <di:waypoint x="590" y="228"/>
+        <di:waypoint x="680" y="228"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="605" y="210" width="50" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_gradual_di" bpmnElement="flow_gradual">
+        <di:waypoint x="590" y="283"/>
+        <di:waypoint x="590" y="328"/>
+        <di:waypoint x="680" y="328"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="605" y="310" width="44" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_7_di" bpmnElement="flow_7">
+        <di:waypoint x="780" y="228"/>
+        <di:waypoint x="812" y="228"/>
+        <di:waypoint x="812" y="258"/>
+        <di:waypoint x="845" y="258"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_8_di" bpmnElement="flow_8">
+        <di:waypoint x="780" y="328"/>
+        <di:waypoint x="812" y="328"/>
+        <di:waypoint x="812" y="258"/>
+        <di:waypoint x="845" y="258"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_9_di" bpmnElement="flow_9">
+        <di:waypoint x="870" y="283"/>
+        <di:waypoint x="870" y="430"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_10_di" bpmnElement="flow_10">
+        <di:waypoint x="920" y="470"/>
+        <di:waypoint x="985" y="470"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_approved_di" bpmnElement="flow_approved">
+        <di:waypoint x="1010" y="445"/>
+        <di:waypoint x="1010" y="400"/>
+        <di:waypoint x="1210" y="400"/>
+        <di:waypoint x="1210" y="298"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1082" y="382" width="56" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_revision_needed_di" bpmnElement="flow_revision_needed">
+        <di:waypoint x="1010" y="495"/>
+        <di:waypoint x="1010" y="510"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1018" y="500" width="30" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_revision_requested_di" bpmnElement="flow_revision_requested">
+        <di:waypoint x="960" y="550"/>
+        <di:waypoint x="450" y="550"/>
+        <di:waypoint x="450" y="298"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_11_di" bpmnElement="flow_11">
+        <di:waypoint x="1260" y="258"/>
+        <di:waypoint x="1320" y="258"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_12_di" bpmnElement="flow_12">
+        <di:waypoint x="1420" y="258"/>
+        <di:waypoint x="1480" y="258"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_13_di" bpmnElement="flow_13">
+        <di:waypoint x="1580" y="258"/>
+        <di:waypoint x="1645" y="258"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_to_clients_di" bpmnElement="flow_to_clients">
+        <di:waypoint x="1670" y="283"/>
+        <di:waypoint x="1670" y="620"/>
+        <di:waypoint x="1800" y="620"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_to_regulators_di" bpmnElement="flow_to_regulators">
+        <di:waypoint x="1670" y="283"/>
+        <di:waypoint x="1670" y="710"/>
+        <di:waypoint x="1800" y="710"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_to_systems_di" bpmnElement="flow_to_systems">
+        <di:waypoint x="1695" y="258"/>
+        <di:waypoint x="1827" y="258"/>
+        <di:waypoint x="1827" y="620"/>
+        <di:waypoint x="1960" y="620"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_14_di" bpmnElement="flow_14">
+        <di:waypoint x="1850" y="580"/>
+        <di:waypoint x="1850" y="150"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_15_di" bpmnElement="flow_15">
+        <di:waypoint x="1900" y="710"/>
+        <di:waypoint x="2012" y="710"/>
+        <di:waypoint x="2012" y="620"/>
+        <di:waypoint x="2125" y="620"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_16_di" bpmnElement="flow_16">
+        <di:waypoint x="2060" y="620"/>
+        <di:waypoint x="2125" y="620"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_17_di" bpmnElement="flow_17">
+        <di:waypoint x="1900" y="110"/>
+        <di:waypoint x="2012" y="110"/>
+        <di:waypoint x="2012" y="620"/>
+        <di:waypoint x="2125" y="620"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_18_di" bpmnElement="flow_18">
+        <di:waypoint x="2175" y="620"/>
+        <di:waypoint x="2240" y="620"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_19_di" bpmnElement="flow_19">
+        <di:waypoint x="2340" y="620"/>
+        <di:waypoint x="2400" y="620"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_20_di" bpmnElement="flow_20">
+        <di:waypoint x="2500" y="620"/>
+        <di:waypoint x="2582" y="620"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_deadline_di" bpmnElement="flow_deadline">
+        <di:waypoint x="1420" y="316"/>
+        <di:waypoint x="1420" y="350"/>
+        <di:waypoint x="2600" y="350"/>
+        <di:waypoint x="2600" y="602"/>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Data Associations -->
+      <bpmndi:BPMNEdge id="data_out_1_di" bpmnElement="data_out_1">
+        <di:waypoint x="450" y="218"/>
+        <di:waypoint x="448" y="190"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_2_di" bpmnElement="data_out_2">
+        <di:waypoint x="870" y="233"/>
+        <di:waypoint x="893" y="190"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_3_di" bpmnElement="data_out_3">
+        <di:waypoint x="1210" y="218"/>
+        <di:waypoint x="1208" y="190"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_4_di" bpmnElement="data_out_4">
+        <di:waypoint x="1370" y="218"/>
+        <di:waypoint x="1368" y="190"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_5_di" bpmnElement="data_out_5">
+        <di:waypoint x="1530" y="218"/>
+        <di:waypoint x="1528" y="190"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_6_di" bpmnElement="data_out_6">
+        <di:waypoint x="1850" y="750"/>
+        <di:waypoint x="1848" y="750"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

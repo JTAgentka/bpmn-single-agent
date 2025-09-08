@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_ProductInitiation"
+                  targetNamespace="http://jtbank.cz/bpmn">
+  
+  <bpmn:collaboration id="Collaboration_ProductInitiation">
+    <bpmn:participant id="Pool_ProductInitiation" name="Product Initiation Process" processRef="Process_ProductInitiation"/>
+  </bpmn:collaboration>
+  
+  <bpmn:process id="Process_ProductInitiation" isExecutable="true">
+    <!-- Lanes -->
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_Initiator" name="Iniciátor">
+        <bpmn:flowNodeRef>start_client_request</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>start_market_opportunity</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>start_new_emission</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>start_unique_idea</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_document_initiative</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_submit_initiative</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_ODIC" name="ODIC">
+        <bpmn:flowNodeRef>gateway_completeness</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_request_completion</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>gateway_accelerated</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_archive_initiative</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_accelerated_processing</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_standard_processing</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>end_accelerated</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>end_standard</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>timeout_completion</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    
+    <!-- Start Events -->
+    <bpmn:startEvent id="start_client_request" name="Klientská poptávka">
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:startEvent id="start_market_opportunity" name="Tržní příležitost">
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:startEvent id="start_new_emission" name="Nová emise">
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:startEvent id="start_unique_idea" name="Inovativní nápad">
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- User Tasks -->
+    <bpmn:userTask id="task_document_initiative" name="Dokumentovat podnět">
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+      <bpmn:incoming>flow_incomplete</bpmn:incoming>
+      <bpmn:outgoing>flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_submit_initiative" name="Podat písemný podnět">
+      <bpmn:incoming>flow_5</bpmn:incoming>
+      <bpmn:outgoing>flow_6</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Gateways -->
+    <bpmn:exclusiveGateway id="gateway_completeness" name="Je podnět kompletní?">
+      <bpmn:incoming>flow_6</bpmn:incoming>
+      <bpmn:outgoing>flow_complete</bpmn:outgoing>
+      <bpmn:outgoing>flow_incomplete_check</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:userTask id="task_request_completion" name="Vyžádat doplnění">
+      <bpmn:incoming>flow_incomplete_check</bpmn:incoming>
+      <bpmn:outgoing>flow_incomplete</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:serviceTask id="task_archive_initiative" name="Archivovat podnět">
+      <bpmn:incoming>flow_complete</bpmn:incoming>
+      <bpmn:outgoing>flow_7</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:exclusiveGateway id="gateway_accelerated" name="Zrychlený režim?">
+      <bpmn:incoming>flow_7</bpmn:incoming>
+      <bpmn:outgoing>flow_accelerated</bpmn:outgoing>
+      <bpmn:outgoing>flow_standard</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:userTask id="task_accelerated_processing" name="Zpracovat zrychleně">
+      <bpmn:incoming>flow_accelerated</bpmn:incoming>
+      <bpmn:outgoing>flow_8</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_standard_processing" name="Standardní zpracování">
+      <bpmn:incoming>flow_standard</bpmn:incoming>
+      <bpmn:outgoing>flow_9</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- End Events -->
+    <bpmn:endEvent id="end_accelerated" name="Zrychlená implementace">
+      <bpmn:incoming>flow_8</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <bpmn:endEvent id="end_standard" name="Předat k schválení">
+      <bpmn:incoming>flow_9</bpmn:incoming>
+      <bpmn:incoming>flow_timeout</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Boundary Event -->
+    <bpmn:boundaryEvent id="timeout_completion" name="7 dní timeout" attachedToRef="task_request_completion">
+      <bpmn:outgoing>flow_timeout</bpmn:outgoing>
+      <bpmn:timerEventDefinition>
+        <bpmn:timeDuration>P7D</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    
+    <!-- Sequence Flows -->
+    <bpmn:sequenceFlow id="flow_1" sourceRef="start_client_request" targetRef="task_document_initiative"/>
+    <bpmn:sequenceFlow id="flow_2" sourceRef="start_market_opportunity" targetRef="task_document_initiative"/>
+    <bpmn:sequenceFlow id="flow_3" sourceRef="start_new_emission" targetRef="task_document_initiative"/>
+    <bpmn:sequenceFlow id="flow_4" sourceRef="start_unique_idea" targetRef="task_document_initiative"/>
+    <bpmn:sequenceFlow id="flow_5" sourceRef="task_document_initiative" targetRef="task_submit_initiative"/>
+    <bpmn:sequenceFlow id="flow_6" sourceRef="task_submit_initiative" targetRef="gateway_completeness"/>
+    <bpmn:sequenceFlow id="flow_complete" name="Ano" sourceRef="gateway_completeness" targetRef="task_archive_initiative"/>
+    <bpmn:sequenceFlow id="flow_incomplete_check" name="Ne" sourceRef="gateway_completeness" targetRef="task_request_completion"/>
+    <bpmn:sequenceFlow id="flow_incomplete" sourceRef="task_request_completion" targetRef="task_document_initiative"/>
+    <bpmn:sequenceFlow id="flow_7" sourceRef="task_archive_initiative" targetRef="gateway_accelerated"/>
+    <bpmn:sequenceFlow id="flow_accelerated" name="Ano" sourceRef="gateway_accelerated" targetRef="task_accelerated_processing"/>
+    <bpmn:sequenceFlow id="flow_standard" name="Ne" sourceRef="gateway_accelerated" targetRef="task_standard_processing"/>
+    <bpmn:sequenceFlow id="flow_8" sourceRef="task_accelerated_processing" targetRef="end_accelerated"/>
+    <bpmn:sequenceFlow id="flow_9" sourceRef="task_standard_processing" targetRef="end_standard"/>
+    <bpmn:sequenceFlow id="flow_timeout" sourceRef="timeout_completion" targetRef="end_standard"/>
+    
+    <!-- Data Objects -->
+    <bpmn:dataObjectReference id="data_initiative_document" name="Dokument podnětu" dataObjectRef="DataObject_1"/>
+    <bpmn:dataObject id="DataObject_1"/>
+    
+    <bpmn:dataObjectReference id="data_product_list" name="Produktový list" dataObjectRef="DataObject_2"/>
+    <bpmn:dataObject id="DataObject_2"/>
+    
+    <!-- Data Associations -->
+    <bpmn:dataOutputAssociation id="data_out_1">
+      <bpmn:sourceRef>task_document_initiative</bpmn:sourceRef>
+      <bpmn:targetRef>data_initiative_document</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataInputAssociation id="data_in_1">
+      <bpmn:sourceRef>data_product_list</bpmn:sourceRef>
+      <bpmn:targetRef>gateway_accelerated</bpmn:targetRef>
+    </bpmn:dataInputAssociation>
+  </bpmn:process>
+  
+  <!-- DI Section -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_ProductInitiation">
+      <bpmndi:BPMNShape id="Pool_ProductInitiation_di" bpmnElement="Pool_ProductInitiation" isHorizontal="true">
+        <dc:Bounds x="100" y="50" width="1400" height="400"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Lanes -->
+      <bpmndi:BPMNShape id="Lane_Initiator_di" bpmnElement="Lane_Initiator" isHorizontal="true">
+        <dc:Bounds x="130" y="50" width="1370" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_ODIC_di" bpmnElement="Lane_ODIC" isHorizontal="true">
+        <dc:Bounds x="130" y="200" width="1370" height="250"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Start Events in Initiator Lane -->
+      <bpmndi:BPMNShape id="start_client_request_di" bpmnElement="start_client_request">
+        <dc:Bounds x="180" y="80" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="155" y="123" width="86" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="start_market_opportunity_di" bpmnElement="start_market_opportunity">
+        <dc:Bounds x="180" y="130" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="158" y="173" width="80" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="start_new_emission_di" bpmnElement="start_new_emission">
+        <dc:Bounds x="250" y="80" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="238" y="123" width="60" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="start_unique_idea_di" bpmnElement="start_unique_idea">
+        <dc:Bounds x="250" y="130" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="226" y="173" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- User Tasks in Initiator Lane -->
+      <bpmndi:BPMNShape id="task_document_initiative_di" bpmnElement="task_document_initiative">
+        <dc:Bounds x="350" y="95" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_submit_initiative_di" bpmnElement="task_submit_initiative">
+        <dc:Bounds x="500" y="95" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- ODIC Lane Elements -->
+      <bpmndi:BPMNShape id="gateway_completeness_di" bpmnElement="gateway_completeness" isMarkerVisible="true">
+        <dc:Bounds x="525" y="275" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="508" y="332" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_request_completion_di" bpmnElement="task_request_completion">
+        <dc:Bounds x="650" y="350" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_archive_initiative_di" bpmnElement="task_archive_initiative">
+        <dc:Bounds x="650" y="260" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="gateway_accelerated_di" bpmnElement="gateway_accelerated" isMarkerVisible="true">
+        <dc:Bounds x="825" y="275" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="808" y="332" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_accelerated_processing_di" bpmnElement="task_accelerated_processing">
+        <dc:Bounds x="950" y="220" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_standard_processing_di" bpmnElement="task_standard_processing">
+        <dc:Bounds x="950" y="330" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- End Events -->
+      <bpmndi:BPMNShape id="end_accelerated_di" bpmnElement="end_accelerated">
+        <dc:Bounds x="1150" y="242" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1135" y="285" width="66" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="end_standard_di" bpmnElement="end_standard">
+        <dc:Bounds x="1150" y="352" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1127" y="395" width="82" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Boundary Event -->
+      <bpmndi:BPMNShape id="timeout_completion_di" bpmnElement="timeout_completion">
+        <dc:Bounds x="732" y="412" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="720" y="455" width="60" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Data Objects -->
+      <bpmndi:BPMNShape id="data_initiative_document_di" bpmnElement="data_initiative_document">
+        <dc:Bounds x="380" y="25" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="356" y="5" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_product_list_di" bpmnElement="data_product_list">
+        <dc:Bounds x="855" y="210" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="837" y="190" width="72" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence Flows -->
+      <bpmndi:BPMNEdge id="flow_1_di" bpmnElement="flow_1">
+        <di:waypoint x="216" y="98"/>
+        <di:waypoint x="350" y="98"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_2_di" bpmnElement="flow_2">
+        <di:waypoint x="216" y="148"/>
+        <di:waypoint x="350" y="148"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_3_di" bpmnElement="flow_3">
+        <di:waypoint x="286" y="98"/>
+        <di:waypoint x="350" y="98"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_4_di" bpmnElement="flow_4">
+        <di:waypoint x="286" y="148"/>
+        <di:waypoint x="350" y="148"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_5_di" bpmnElement="flow_5">
+        <di:waypoint x="450" y="135"/>
+        <di:waypoint x="500" y="135"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_6_di" bpmnElement="flow_6">
+        <di:waypoint x="550" y="175"/>
+        <di:waypoint x="550" y="275"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_complete_di" bpmnElement="flow_complete">
+        <di:waypoint x="575" y="300"/>
+        <di:waypoint x="650" y="300"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="603" y="282" width="20" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_incomplete_check_di" bpmnElement="flow_incomplete_check">
+        <di:waypoint x="550" y="325"/>
+        <di:waypoint x="550" y="390"/>
+        <di:waypoint x="650" y="390"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="558" y="355" width="15" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_incomplete_di" bpmnElement="flow_incomplete">
+        <di:waypoint x="700" y="350"/>
+        <di:waypoint x="700" y="200"/>
+        <di:waypoint x="400" y="200"/>
+        <di:waypoint x="400" y="175"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_7_di" bpmnElement="flow_7">
+        <di:waypoint x="750" y="300"/>
+        <di:waypoint x="825" y="300"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_accelerated_di" bpmnElement="flow_accelerated">
+        <di:waypoint x="850" y="275"/>
+        <di:waypoint x="850" y="260"/>
+        <di:waypoint x="950" y="260"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="895" y="242" width="20" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_standard_di" bpmnElement="flow_standard">
+        <di:waypoint x="850" y="325"/>
+        <di:waypoint x="850" y="370"/>
+        <di:waypoint x="950" y="370"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="895" y="352" width="15" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_8_di" bpmnElement="flow_8">
+        <di:waypoint x="1050" y="260"/>
+        <di:waypoint x="1150" y="260"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_9_di" bpmnElement="flow_9">
+        <di:waypoint x="1050" y="370"/>
+        <di:waypoint x="1150" y="370"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_timeout_di" bpmnElement="flow_timeout">
+        <di:waypoint x="750" y="430"/>
+        <di:waypoint x="1168" y="430"/>
+        <di:waypoint x="1168" y="388"/>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Data Associations -->
+      <bpmndi:BPMNEdge id="data_out_1_di" bpmnElement="data_out_1">
+        <di:waypoint x="400" y="95"/>
+        <di:waypoint x="400" y="75"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_in_1_di" bpmnElement="data_in_1">
+        <di:waypoint x="873" y="260"/>
+        <di:waypoint x="850" y="275"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

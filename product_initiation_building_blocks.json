@@ -1,0 +1,342 @@
+{
+  "subprocess_name": "Product Initiation",
+  "subprocess_id": "product_initiation_001",
+  "description": "Initial phase of investment product lifecycle where ideas are captured, documented, and submitted for evaluation",
+  "building_blocks": {
+    "start_events": [
+      {
+        "id": "start_001",
+        "role": "Business Division Employee",
+        "name": "Client Request Received",
+        "type": "message_start_event",
+        "purpose": "Triggered when a client directly requests a specific investment product",
+        "trigger": "Client communication (email, phone, meeting)"
+      },
+      {
+        "id": "start_002", 
+        "role": "Financial Markets Employee",
+        "name": "Market Opportunity Identified",
+        "type": "message_start_event",
+        "purpose": "Initiated when market monitoring reveals new investment opportunities",
+        "trigger": "Market analysis, competitor monitoring"
+      },
+      {
+        "id": "start_003",
+        "role": "ONE Department Employee",
+        "name": "New Emission Opportunity",
+        "type": "message_start_event",
+        "purpose": "Started when a new emission becomes available for potential distribution",
+        "trigger": "Issuer communication, emission announcement"
+      },
+      {
+        "id": "start_004",
+        "role": "Bank Employee",
+        "name": "Unique Product Idea",
+        "type": "message_start_event", 
+        "purpose": "Initiated by any bank employee with an innovative product concept",
+        "trigger": "Internal brainstorming, innovation sessions"
+      }
+    ],
+    "user_tasks": [
+      {
+        "id": "user_task_001",
+        "role": "Initiative Proposer",
+        "name": "Document Initiative Details",
+        "type": "user_task",
+        "purpose": "Capture complete initiative information including product identification, description, and business justification",
+        "required_data": [
+          "Product name",
+          "ISIN (if available)",
+          "Issuer/investment company",
+          "Product description",
+          "Business justification",
+          "Estimated 12-month volume",
+          "Proposer contact information"
+        ]
+      },
+      {
+        "id": "user_task_002",
+        "role": "Initiative Proposer", 
+        "name": "Submit Written Initiative",
+        "type": "user_task",
+        "purpose": "Formally submit the documented initiative to ODIC for processing",
+        "required_data": [
+          "Completed initiative document",
+          "Supporting materials (if any)"
+        ]
+      },
+      {
+        "id": "user_task_003",
+        "role": "Initiative Proposer",
+        "name": "Provide Additional Cooperation",
+        "type": "user_task",
+        "purpose": "Provide additional information or clarification when requested by ODIC",
+        "required_data": [
+          "Requested additional information",
+          "Clarifications on initiative details"
+        ]
+      }
+    ],
+    "service_tasks": [
+      {
+        "id": "service_task_001",
+        "role": "ODIC System",
+        "name": "Archive Initiative Electronically",
+        "type": "service_task",
+        "purpose": "Automatically store the initiative in the electronic filing system for future reference and tracking",
+        "system_integration": "Document Management System",
+        "data_storage": "P drive ODIC directory structure"
+      },
+      {
+        "id": "service_task_002",
+        "role": "ODIC System",
+        "name": "Generate Initiative Reference Number",
+        "type": "service_task", 
+        "purpose": "Create unique identifier for tracking the initiative through the approval process",
+        "system_integration": "Initiative Tracking System"
+      },
+      {
+        "id": "service_task_003",
+        "role": "ODIC System",
+        "name": "Notify Stakeholders",
+        "type": "service_task",
+        "purpose": "Automatically inform relevant parties about new initiative submission",
+        "system_integration": "Email/Notification System"
+      }
+    ],
+    "decision_gateways": [
+      {
+        "id": "gateway_001",
+        "role": "ODIC Analyst",
+        "name": "Initiative Completeness Check",
+        "type": "exclusive_gateway",
+        "purpose": "Verify that all required information is present and initiative is properly documented",
+        "decision_criteria": [
+          "Product identification complete",
+          "Description adequate",
+          "Business justification present",
+          "Volume estimate provided",
+          "Contact information available"
+        ],
+        "outcomes": [
+          "Complete - proceed to regime check",
+          "Incomplete - request additional information"
+        ]
+      },
+      {
+        "id": "gateway_002",
+        "role": "ODIC Analyst", 
+        "name": "Accelerated Regime Eligibility",
+        "type": "exclusive_gateway",
+        "purpose": "Determine if the product qualifies for accelerated approval process",
+        "decision_criteria": [
+          "Investment company has existing distribution agreement",
+          "Similar products already offered",
+          "Product classified as 'non-complex' for implementation"
+        ],
+        "outcomes": [
+          "Accelerated regime - simplified process",
+          "Standard regime - full approval process"
+        ]
+      },
+      {
+        "id": "gateway_003",
+        "role": "ODIC Analyst",
+        "name": "Implementation Complexity Assessment", 
+        "type": "exclusive_gateway",
+        "purpose": "Evaluate technical and operational complexity of implementing the product",
+        "decision_criteria": [
+          "Existing product list availability",
+          "System integration requirements",
+          "Third-party dependencies"
+        ],
+        "outcomes": [
+          "Low complexity - standard processing",
+          "Medium complexity - extended timeline",
+          "High complexity - feasibility study required"
+        ]
+      }
+    ],
+    "end_events": [
+      {
+        "id": "end_001",
+        "role": "ODIC",
+        "name": "Initiative Successfully Submitted",
+        "type": "end_event",
+        "purpose": "Initiative has been properly documented, archived, and is ready for next phase evaluation",
+        "outcome": "Initiative moves to Product Approval subprocess"
+      },
+      {
+        "id": "end_002",
+        "role": "ODIC",
+        "name": "Initiative Processed via Accelerated Regime",
+        "type": "end_event", 
+        "purpose": "Initiative qualified for accelerated processing and moves directly to implementation",
+        "outcome": "Initiative bypasses standard approval and moves to simplified processing"
+      },
+      {
+        "id": "end_003",
+        "role": "ODIC",
+        "name": "Initiative Rejected - Incomplete",
+        "type": "error_end_event",
+        "purpose": "Initiative rejected due to insufficient information despite multiple requests for completion",
+        "outcome": "Initiative closed, proposer may resubmit with complete information"
+      }
+    ],
+    "data_objects": [
+      {
+        "id": "data_001",
+        "name": "Initiative Document",
+        "type": "data_object",
+        "purpose": "Central document containing all initiative details and supporting information",
+        "attributes": [
+          "Product identification (name, ISIN, issuer)",
+          "Product description",
+          "Business justification",
+          "Estimated 12-month volume",
+          "Proposer contact information",
+          "Submission timestamp",
+          "Initiative reference number"
+        ],
+        "storage": "Electronic archive in ODIC directory"
+      },
+      {
+        "id": "data_002", 
+        "name": "Distribution Agreement Registry",
+        "type": "data_store",
+        "purpose": "Reference database of existing distribution agreements for accelerated regime eligibility",
+        "attributes": [
+          "Investment company name",
+          "Agreement status", 
+          "Product categories covered",
+          "Agreement expiration date"
+        ]
+      },
+      {
+        "id": "data_003",
+        "name": "Product List Repository",
+        "type": "data_store", 
+        "purpose": "Catalog of existing product implementation templates and procedures",
+        "attributes": [
+          "Product type",
+          "Implementation complexity",
+          "System requirements",
+          "Documentation templates"
+        ]
+      },
+      {
+        "id": "data_004",
+        "name": "Initiative Tracking Log",
+        "type": "data_object",
+        "purpose": "Audit trail of initiative processing steps and decisions",
+        "attributes": [
+          "Initiative ID",
+          "Processing timestamps", 
+          "Decision points and outcomes",
+          "Responsible parties",
+          "Current status"
+        ]
+      }
+    ],
+    "exception_handling": [
+      {
+        "id": "exception_001",
+        "name": "Incomplete Information Timeout",
+        "type": "timer_intermediate_event",
+        "purpose": "Handle cases where proposer doesn't respond to information requests within specified timeframe",
+        "trigger": "7 business days without response",
+        "action": "Send reminder notification",
+        "escalation": "Close initiative after 14 days total"
+      },
+      {
+        "id": "exception_002",
+        "name": "System Unavailability",
+        "type": "error_intermediate_event", 
+        "purpose": "Handle technical issues preventing electronic archival",
+        "trigger": "Document management system error",
+        "action": "Temporary manual processing and retry",
+        "escalation": "IT support involvement"
+      },
+      {
+        "id": "exception_003",
+        "name": "Duplicate Initiative Detection",
+        "type": "conditional_intermediate_event",
+        "purpose": "Handle cases where similar initiative already exists in the system",
+        "trigger": "System identifies potential duplicate based on product identifiers",
+        "action": "Flag for ODIC analyst review",
+        "escalation": "Merge with existing initiative or continue as separate"
+      },
+      {
+        "id": "exception_004",
+        "name": "Regulatory Restriction Alert",
+        "type": "signal_intermediate_event",
+        "purpose": "Handle products that may be subject to regulatory restrictions",
+        "trigger": "Automated screening against restricted product list",
+        "action": "Flag for compliance review",
+        "escalation": "Compliance department involvement"
+      }
+    ],
+    "business_rules": [
+      {
+        "id": "rule_001",
+        "name": "Minimum Information Requirement",
+        "description": "Initiative must contain product identification, description, justification with volume estimate, and proposer contact",
+        "enforcement": "gateway_001"
+      },
+      {
+        "id": "rule_002", 
+        "name": "Accelerated Regime Eligibility",
+        "description": "Only products from contracted investment companies with existing similar products qualify",
+        "enforcement": "gateway_002"
+      },
+      {
+        "id": "rule_003",
+        "name": "Electronic Archival Requirement",
+        "description": "All initiatives must be archived electronically in designated ODIC directory structure",
+        "enforcement": "service_task_001"
+      },
+      {
+        "id": "rule_004",
+        "name": "Proposer Cooperation Obligation",
+        "description": "Initiative proposer must provide cooperation and additional information when requested by ODIC",
+        "enforcement": "user_task_003"
+      }
+    ]
+  },
+  "process_flow_summary": {
+    "standard_path": [
+      "start_event → document_initiative → submit_initiative → completeness_check → regime_eligibility → complexity_assessment → archive_electronically → end_event"
+    ],
+    "accelerated_path": [
+      "start_event → document_initiative → submit_initiative → completeness_check → regime_eligibility → archive_electronically → accelerated_end_event"
+    ],
+    "exception_paths": [
+      "incomplete_information → timeout_handling → rejection_end_event",
+      "system_error → manual_processing → retry_mechanism",
+      "duplicate_detection → review_and_merge_decision",
+      "regulatory_restriction → compliance_review"
+    ]
+  },
+  "key_performance_indicators": [
+    {
+      "name": "Initiative Processing Time",
+      "description": "Average time from submission to completion of initiation phase",
+      "target": "5 business days for standard regime, 2 business days for accelerated"
+    },
+    {
+      "name": "Information Completeness Rate",
+      "description": "Percentage of initiatives that pass completeness check on first submission", 
+      "target": "85%"
+    },
+    {
+      "name": "Accelerated Regime Usage",
+      "description": "Percentage of initiatives that qualify for accelerated processing",
+      "target": "40% of total initiatives"
+    },
+    {
+      "name": "Exception Rate",
+      "description": "Percentage of initiatives encountering processing exceptions",
+      "target": "Less than 10%"
+    }
+  ]
+}

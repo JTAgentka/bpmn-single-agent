@@ -1,0 +1,115 @@
+{
+  "pipeline_stage": "1_subprocess_identification",
+  "document": {
+    "name": "JTB_2019_005_Investicni_produkty.docx",
+    "type": "working_standard",
+    "subject": "Návrh, vývoj a správa investičních produktů v J&T BANCE",
+    "analyzed": true
+  },
+  "identified_subprocesses": [
+    {
+      "id": "subprocess_1",
+      "name": "Product Initiation",
+      "category": "Initialization",
+      "purpose": "Zachycení a formalizace podnětu na implementaci nového investičního produktu do portfolia banky"
+    },
+    {
+      "id": "subprocess_2",
+      "name": "Product Approval",
+      "category": "Decision Making",
+      "purpose": "Posouzení a schválení návrhu na implementaci investičního produktu výborem VIN"
+    },
+    {
+      "id": "subprocess_3",
+      "name": "Product Development",
+      "category": "Implementation",
+      "purpose": "Komplexní vývoj a implementace schváleného produktového záměru včetně všech analýz a přípravy dokumentace"
+    },
+    {
+      "id": "subprocess_4",
+      "name": "Distribution Approval",
+      "category": "Authorization",
+      "purpose": "Finální schválení implementovaného produktu k distribuci klientům"
+    },
+    {
+      "id": "subprocess_5",
+      "name": "Product Distribution",
+      "category": "Operations",
+      "purpose": "Aktivní distribuce schváleného produktu klientům prostřednictvím definovaných kanálů"
+    },
+    {
+      "id": "subprocess_6",
+      "name": "Product Monitoring",
+      "category": "Control",
+      "purpose": "Průběžný monitoring a reporting produktu během jeho životního cyklu"
+    },
+    {
+      "id": "subprocess_7",
+      "name": "Product Withdrawal",
+      "category": "Termination",
+      "purpose": "Řízené stažení produktu z aktivní nabídky banky"
+    }
+  ],
+  "current_subprocess": "all_completed",
+  "processing_status": "pipeline_completed",
+  "processed_subprocesses": [
+    {
+      "id": "subprocess_1",
+      "status": "completed",
+      "bpmn_file": "subprocess_1_product_initiation.bpmn",
+      "building_blocks": "mapped",
+      "di_standards": "applied",
+      "qa_result": "passed"
+    },
+    {
+      "id": "subprocess_2", 
+      "status": "completed",
+      "bpmn_file": "subprocess_2_product_approval.bpmn",
+      "building_blocks": "mapped",
+      "di_standards": "applied",
+      "qa_result": "passed"
+    },
+    {
+      "id": "subprocess_3",
+      "status": "completed",
+      "bpmn_file": "subprocess_3_product_development.bpmn",
+      "building_blocks": "mapped",
+      "di_standards": "applied",
+      "qa_result": "passed"
+    },
+    {
+      "id": "subprocess_4",
+      "status": "completed",
+      "bpmn_file": "subprocess_4_distribution_approval.bpmn",
+      "building_blocks": "mapped",
+      "di_standards": "applied",
+      "qa_result": "passed"
+    },
+    {
+      "id": "subprocess_5",
+      "status": "completed",
+      "bpmn_file": "subprocess_5_product_distribution.bpmn",
+      "building_blocks": "mapped",
+      "di_standards": "applied",
+      "qa_result": "passed"
+    },
+    {
+      "id": "subprocess_6",
+      "status": "completed",
+      "bpmn_file": "subprocess_6_product_monitoring.bpmn",
+      "building_blocks": "mapped",
+      "di_standards": "applied",
+      "qa_result": "passed"
+    },
+    {
+      "id": "subprocess_7",
+      "status": "completed",
+      "bpmn_file": "subprocess_7_product_withdrawal.bpmn",
+      "building_blocks": "mapped",
+      "di_standards": "applied",
+      "qa_result": "passed"
+    }
+  ],
+  "processing_status": "completed",
+  "timestamp": "2025-09-08T10:05:00Z"
+}

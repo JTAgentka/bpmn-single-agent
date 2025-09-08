@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_DistributionApproval"
+                  targetNamespace="http://jtbank.cz/bpmn">
+  
+  <bpmn:collaboration id="Collaboration_DistributionApproval">
+    <bpmn:participant id="Pool_DistributionApproval" name="Distribution Approval Process" processRef="Process_DistributionApproval"/>
+  </bpmn:collaboration>
+  
+  <bpmn:process id="Process_DistributionApproval" isExecutable="true">
+    <!-- Lanes -->
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_ODIC" name="ODIC">
+        <bpmn:flowNodeRef>start_distribution_request</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_prepare_checklist</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_verify_documentation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_verify_system_readiness</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_verify_compliance</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>gateway_checklist_complete</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_complete_missing_items</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_VIN" name="VIN Committee">
+        <bpmn:flowNodeRef>task_final_vin_review</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>gateway_final_approval</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_document_final_approval</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_document_final_rejection</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_set_distribution_conditions</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>gateway_conditions_accepted</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_System" name="System">
+        <bpmn:flowNodeRef>task_update_distribution_status</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_notify_rejection</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_activate_distribution</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>end_approved_for_distribution</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>end_distribution_rejected</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="start_distribution_request" name="Žádost o povolení distribuce">
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- ODIC Tasks -->
+    <bpmn:userTask id="task_prepare_checklist" name="Připravit distribuční checklist">
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_verify_documentation" name="Ověřit kompletnost dokumentace">
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_verify_system_readiness" name="Ověřit připravenost systémů">
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_verify_compliance" name="Ověřit compliance požadavky">
+      <bpmn:incoming>flow_4</bpmn:incoming>
+      <bpmn:outgoing>flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:exclusiveGateway id="gateway_checklist_complete" name="Checklist kompletní?">
+      <bpmn:incoming>flow_5</bpmn:incoming>
+      <bpmn:outgoing>flow_checklist_ok</bpmn:outgoing>
+      <bpmn:outgoing>flow_checklist_incomplete</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:userTask id="task_complete_missing_items" name="Doplnit chybějící položky">
+      <bpmn:incoming>flow_checklist_incomplete</bpmn:incoming>
+      <bpmn:outgoing>flow_back_to_verify</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- VIN Tasks -->
+    <bpmn:userTask id="task_final_vin_review" name="Finální přezkoumání VIN">
+      <bpmn:incoming>flow_checklist_ok</bpmn:incoming>
+      <bpmn:outgoing>flow_6</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:exclusiveGateway id="gateway_final_approval" name="Finální rozhodnutí">
+      <bpmn:incoming>flow_6</bpmn:incoming>
+      <bpmn:outgoing>flow_final_approved</bpmn:outgoing>
+      <bpmn:outgoing>flow_final_rejected</bpmn:outgoing>
+      <bpmn:outgoing>flow_final_conditional</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:userTask id="task_document_final_approval" name="Zdokumentovat finální schválení">
+      <bpmn:incoming>flow_final_approved</bpmn:incoming>
+      <bpmn:outgoing>flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_document_final_rejection" name="Zdokumentovat finální zamítnutí">
+      <bpmn:incoming>flow_final_rejected</bpmn:incoming>
+      <bpmn:outgoing>flow_8</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_set_distribution_conditions" name="Stanovit distribuční podmínky">
+      <bpmn:incoming>flow_final_conditional</bpmn:incoming>
+      <bpmn:outgoing>flow_9</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:exclusiveGateway id="gateway_conditions_accepted" name="Podmínky akceptovány?">
+      <bpmn:incoming>flow_9</bpmn:incoming>
+      <bpmn:outgoing>flow_conditions_accepted</bpmn:outgoing>
+      <bpmn:outgoing>flow_conditions_rejected</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <!-- System Tasks -->
+    <bpmn:serviceTask id="task_update_distribution_status" name="Aktualizovat stav distribuce">
+      <bpmn:incoming>flow_7</bpmn:incoming>
+      <bpmn:incoming>flow_conditions_accepted</bpmn:incoming>
+      <bpmn:outgoing>flow_10</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:serviceTask id="task_notify_rejection" name="Notifikovat zamítnutí">
+      <bpmn:incoming>flow_8</bpmn:incoming>
+      <bpmn:incoming>flow_conditions_rejected</bpmn:incoming>
+      <bpmn:outgoing>flow_11</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:serviceTask id="task_activate_distribution" name="Aktivovat distribuci">
+      <bpmn:incoming>flow_10</bpmn:incoming>
+      <bpmn:outgoing>flow_12</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- End Events -->
+    <bpmn:endEvent id="end_approved_for_distribution" name="Schváleno k distribuci">
+      <bpmn:incoming>flow_12</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <bpmn:endEvent id="end_distribution_rejected" name="Distribuce zamítnuta">
+      <bpmn:incoming>flow_11</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows -->
+    <bpmn:sequenceFlow id="flow_1" sourceRef="start_distribution_request" targetRef="task_prepare_checklist"/>
+    <bpmn:sequenceFlow id="flow_2" sourceRef="task_prepare_checklist" targetRef="task_verify_documentation"/>
+    <bpmn:sequenceFlow id="flow_3" sourceRef="task_verify_documentation" targetRef="task_verify_system_readiness"/>
+    <bpmn:sequenceFlow id="flow_4" sourceRef="task_verify_system_readiness" targetRef="task_verify_compliance"/>
+    <bpmn:sequenceFlow id="flow_5" sourceRef="task_verify_compliance" targetRef="gateway_checklist_complete"/>
+    <bpmn:sequenceFlow id="flow_checklist_ok" name="Ano" sourceRef="gateway_checklist_complete" targetRef="task_final_vin_review"/>
+    <bpmn:sequenceFlow id="flow_checklist_incomplete" name="Ne" sourceRef="gateway_checklist_complete" targetRef="task_complete_missing_items"/>
+    <bpmn:sequenceFlow id="flow_back_to_verify" sourceRef="task_complete_missing_items" targetRef="task_verify_documentation"/>
+    <bpmn:sequenceFlow id="flow_6" sourceRef="task_final_vin_review" targetRef="gateway_final_approval"/>
+    <bpmn:sequenceFlow id="flow_final_approved" name="Schváleno" sourceRef="gateway_final_approval" targetRef="task_document_final_approval"/>
+    <bpmn:sequenceFlow id="flow_final_rejected" name="Zamítnuto" sourceRef="gateway_final_approval" targetRef="task_document_final_rejection"/>
+    <bpmn:sequenceFlow id="flow_final_conditional" name="Podmíněně" sourceRef="gateway_final_approval" targetRef="task_set_distribution_conditions"/>
+    <bpmn:sequenceFlow id="flow_7" sourceRef="task_document_final_approval" targetRef="task_update_distribution_status"/>
+    <bpmn:sequenceFlow id="flow_8" sourceRef="task_document_final_rejection" targetRef="task_notify_rejection"/>
+    <bpmn:sequenceFlow id="flow_9" sourceRef="task_set_distribution_conditions" targetRef="gateway_conditions_accepted"/>
+    <bpmn:sequenceFlow id="flow_conditions_accepted" name="Ano" sourceRef="gateway_conditions_accepted" targetRef="task_update_distribution_status"/>
+    <bpmn:sequenceFlow id="flow_conditions_rejected" name="Ne" sourceRef="gateway_conditions_accepted" targetRef="task_notify_rejection"/>
+    <bpmn:sequenceFlow id="flow_10" sourceRef="task_update_distribution_status" targetRef="task_activate_distribution"/>
+    <bpmn:sequenceFlow id="flow_11" sourceRef="task_notify_rejection" targetRef="end_distribution_rejected"/>
+    <bpmn:sequenceFlow id="flow_12" sourceRef="task_activate_distribution" targetRef="end_approved_for_distribution"/>
+    
+    <!-- Data Objects -->
+    <bpmn:dataObjectReference id="data_distribution_checklist" name="Distribuční checklist" dataObjectRef="DataObject_1"/>
+    <bpmn:dataObject id="DataObject_1"/>
+    
+    <bpmn:dataObjectReference id="data_documentation_verification" name="Ověření dokumentace" dataObjectRef="DataObject_2"/>
+    <bpmn:dataObject id="DataObject_2"/>
+    
+    <bpmn:dataObjectReference id="data_system_verification" name="Ověření systémů" dataObjectRef="DataObject_3"/>
+    <bpmn:dataObject id="DataObject_3"/>
+    
+    <bpmn:dataObjectReference id="data_compliance_verification" name="Ověření compliance" dataObjectRef="DataObject_4"/>
+    <bpmn:dataObject id="DataObject_4"/>
+    
+    <bpmn:dataObjectReference id="data_final_decision" name="Finální rozhodnutí" dataObjectRef="DataObject_5"/>
+    <bpmn:dataObject id="DataObject_5"/>
+    
+    <!-- Data Associations -->
+    <bpmn:dataOutputAssociation id="data_out_1">
+      <bpmn:sourceRef>task_prepare_checklist</bpmn:sourceRef>
+      <bpmn:targetRef>data_distribution_checklist</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_2">
+      <bpmn:sourceRef>task_verify_documentation</bpmn:sourceRef>
+      <bpmn:targetRef>data_documentation_verification</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_3">
+      <bpmn:sourceRef>task_verify_system_readiness</bpmn:sourceRef>
+      <bpmn:targetRef>data_system_verification</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_4">
+      <bpmn:sourceRef>task_verify_compliance</bpmn:sourceRef>
+      <bpmn:targetRef>data_compliance_verification</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_5">
+      <bpmn:sourceRef>gateway_final_approval</bpmn:sourceRef>
+      <bpmn:targetRef>data_final_decision</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+  </bpmn:process>
+  
+  <!-- DI Section -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_DistributionApproval">
+      <bpmndi:BPMNShape id="Pool_DistributionApproval_di" bpmnElement="Pool_DistributionApproval" isHorizontal="true">
+        <dc:Bounds x="100" y="50" width="1800" height="500"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Lanes -->
+      <bpmndi:BPMNShape id="Lane_ODIC_di" bpmnElement="Lane_ODIC" isHorizontal="true">
+        <dc:Bounds x="130" y="50" width="1770" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_VIN_di" bpmnElement="Lane_VIN" isHorizontal="true">
+        <dc:Bounds x="130" y="200" width="1770" height="200"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_System_di" bpmnElement="Lane_System" isHorizontal="true">
+        <dc:Bounds x="130" y="400" width="1770" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Start Event -->
+      <bpmndi:BPMNShape id="start_distribution_request_di" bpmnElement="start_distribution_request">
+        <dc:Bounds x="180" y="110" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="155" y="153" width="86" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- ODIC Lane Elements -->
+      <bpmndi:BPMNShape id="task_prepare_checklist_di" bpmnElement="task_prepare_checklist">
+        <dc:Bounds x="280" y="88" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_verify_documentation_di" bpmnElement="task_verify_documentation">
+        <dc:Bounds x="440" y="88" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_verify_system_readiness_di" bpmnElement="task_verify_system_readiness">
+        <dc:Bounds x="600" y="88" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_verify_compliance_di" bpmnElement="task_verify_compliance">
+        <dc:Bounds x="760" y="88" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="gateway_checklist_complete_di" bpmnElement="gateway_checklist_complete" isMarkerVisible="true">
+        <dc:Bounds x="925" y="103" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="905" y="73" width="90" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_complete_missing_items_di" bpmnElement="task_complete_missing_items">
+        <dc:Bounds x="900" y="160" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- VIN Lane Elements -->
+      <bpmndi:BPMNShape id="task_final_vin_review_di" bpmnElement="task_final_vin_review">
+        <dc:Bounds x="900" y="260" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="gateway_final_approval_di" bpmnElement="gateway_final_approval" isMarkerVisible="true">
+        <dc:Bounds x="1065" y="275" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1045" y="245" width="90" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_document_final_approval_di" bpmnElement="task_document_final_approval">
+        <dc:Bounds x="1170" y="220" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_document_final_rejection_di" bpmnElement="task_document_final_rejection">
+        <dc:Bounds x="1170" y="300" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_set_distribution_conditions_di" bpmnElement="task_set_distribution_conditions">
+        <dc:Bounds x="1340" y="260" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="gateway_conditions_accepted_di" bpmnElement="gateway_conditions_accepted" isMarkerVisible="true">
+        <dc:Bounds x="1505" y="275" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1485" y="245" width="90" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- System Lane Elements -->
+      <bpmndi:BPMNShape id="task_update_distribution_status_di" bpmnElement="task_update_distribution_status">
+        <dc:Bounds x="1340" y="440" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_notify_rejection_di" bpmnElement="task_notify_rejection">
+        <dc:Bounds x="1480" y="440" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_activate_distribution_di" bpmnElement="task_activate_distribution">
+        <dc:Bounds x="1620" y="440" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- End Events -->
+      <bpmndi:BPMNShape id="end_approved_for_distribution_di" bpmnElement="end_approved_for_distribution">
+        <dc:Bounds x="1790" y="462" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1770" y="505" width="76" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="end_distribution_rejected_di" bpmnElement="end_distribution_rejected">
+        <dc:Bounds x="1790" y="420" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1770" y="395" width="76" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Data Objects -->
+      <bpmndi:BPMNShape id="data_distribution_checklist_di" bpmnElement="data_distribution_checklist">
+        <dc:Bounds x="310" y="20" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="286" y="5" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_documentation_verification_di" bpmnElement="data_documentation_verification">
+        <dc:Bounds x="470" y="20" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="446" y="5" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_system_verification_di" bpmnElement="data_system_verification">
+        <dc:Bounds x="630" y="20" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="606" y="5" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_compliance_verification_di" bpmnElement="data_compliance_verification">
+        <dc:Bounds x="790" y="20" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="766" y="5" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_final_decision_di" bpmnElement="data_final_decision">
+        <dc:Bounds x="1095" y="180" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1071" y="160" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence Flows -->
+      <bpmndi:BPMNEdge id="flow_1_di" bpmnElement="flow_1">
+        <di:waypoint x="216" y="128"/>
+        <di:waypoint x="280" y="128"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_2_di" bpmnElement="flow_2">
+        <di:waypoint x="380" y="128"/>
+        <di:waypoint x="440" y="128"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_3_di" bpmnElement="flow_3">
+        <di:waypoint x="540" y="128"/>
+        <di:waypoint x="600" y="128"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_4_di" bpmnElement="flow_4">
+        <di:waypoint x="700" y="128"/>
+        <di:waypoint x="760" y="128"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_5_di" bpmnElement="flow_5">
+        <di:waypoint x="860" y="128"/>
+        <di:waypoint x="925" y="128"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_checklist_ok_di" bpmnElement="flow_checklist_ok">
+        <di:waypoint x="950" y="153"/>
+        <di:waypoint x="950" y="260"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="958" y="203" width="20" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_checklist_incomplete_di" bpmnElement="flow_checklist_incomplete">
+        <di:waypoint x="950" y="153"/>
+        <di:waypoint x="950" y="160"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="958" y="153" width="15" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_back_to_verify_di" bpmnElement="flow_back_to_verify">
+        <di:waypoint x="900" y="200"/>
+        <di:waypoint x="490" y="200"/>
+        <di:waypoint x="490" y="168"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_6_di" bpmnElement="flow_6">
+        <di:waypoint x="1000" y="300"/>
+        <di:waypoint x="1065" y="300"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_final_approved_di" bpmnElement="flow_final_approved">
+        <di:waypoint x="1090" y="275"/>
+        <di:waypoint x="1090" y="260"/>
+        <di:waypoint x="1170" y="260"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1115" y="242" width="50" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_final_rejected_di" bpmnElement="flow_final_rejected">
+        <di:waypoint x="1090" y="325"/>
+        <di:waypoint x="1090" y="340"/>
+        <di:waypoint x="1170" y="340"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1115" y="322" width="50" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_final_conditional_di" bpmnElement="flow_final_conditional">
+        <di:waypoint x="1115" y="300"/>
+        <di:waypoint x="1340" y="300"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1215" y="282" width="55" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_7_di" bpmnElement="flow_7">
+        <di:waypoint x="1220" y="220"/>
+        <di:waypoint x="1220" y="200"/>
+        <di:waypoint x="1390" y="200"/>
+        <di:waypoint x="1390" y="440"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_8_di" bpmnElement="flow_8">
+        <di:waypoint x="1220" y="380"/>
+        <di:waypoint x="1220" y="420"/>
+        <di:waypoint x="1530" y="420"/>
+        <di:waypoint x="1530" y="440"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_9_di" bpmnElement="flow_9">
+        <di:waypoint x="1440" y="300"/>
+        <di:waypoint x="1505" y="300"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_conditions_accepted_di" bpmnElement="flow_conditions_accepted">
+        <di:waypoint x="1530" y="325"/>
+        <di:waypoint x="1530" y="380"/>
+        <di:waypoint x="1390" y="380"/>
+        <di:waypoint x="1390" y="440"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1455" y="362" width="20" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_conditions_rejected_di" bpmnElement="flow_conditions_rejected">
+        <di:waypoint x="1530" y="325"/>
+        <di:waypoint x="1530" y="440"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1538" y="380" width="15" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_10_di" bpmnElement="flow_10">
+        <di:waypoint x="1440" y="480"/>
+        <di:waypoint x="1620" y="480"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_11_di" bpmnElement="flow_11">
+        <di:waypoint x="1580" y="480"/>
+        <di:waypoint x="1685" y="480"/>
+        <di:waypoint x="1685" y="438"/>
+        <di:waypoint x="1790" y="438"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_12_di" bpmnElement="flow_12">
+        <di:waypoint x="1720" y="480"/>
+        <di:waypoint x="1790" y="480"/>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Data Associations -->
+      <bpmndi:BPMNEdge id="data_out_1_di" bpmnElement="data_out_1">
+        <di:waypoint x="330" y="88"/>
+        <di:waypoint x="328" y="70"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_2_di" bpmnElement="data_out_2">
+        <di:waypoint x="490" y="88"/>
+        <di:waypoint x="488" y="70"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_3_di" bpmnElement="data_out_3">
+        <di:waypoint x="650" y="88"/>
+        <di:waypoint x="648" y="70"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_4_di" bpmnElement="data_out_4">
+        <di:waypoint x="810" y="88"/>
+        <di:waypoint x="808" y="70"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_5_di" bpmnElement="data_out_5">
+        <di:waypoint x="1090" y="275"/>
+        <di:waypoint x="1113" y="230"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

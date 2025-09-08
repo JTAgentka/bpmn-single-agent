@@ -1,0 +1,632 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_ProductDistribution"
+                  targetNamespace="http://jtbank.cz/bpmn">
+  
+  <bpmn:collaboration id="Collaboration_ProductDistribution">
+    <bpmn:participant id="Pool_ProductDistribution" name="Product Distribution Process" processRef="Process_ProductDistribution"/>
+  </bpmn:collaboration>
+  
+  <bpmn:process id="Process_ProductDistribution" isExecutable="true">
+    <!-- Lanes -->
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_Client" name="Klient">
+        <bpmn:flowNodeRef>start_client_interest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_client_information_review</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_make_investment_decision</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Advisor" name="Poradce/Distribuce">
+        <bpmn:flowNodeRef>task_assess_client_profile</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>gateway_distribution_channel</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_face_to_face_consultation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_online_distribution</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_phone_consultation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_provide_information</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>gateway_mifid_compliance</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_conduct_suitability_test</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_document_advice</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_process_order</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_System" name="Systém">
+        <bpmn:flowNodeRef>task_mifid_compliance_check</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>gateway_compliance_passed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_reject_order</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_execute_order</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>task_send_confirmations</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>end_distribution_complete</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>end_order_rejected</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    
+    <!-- Start Event -->
+    <bpmn:startEvent id="start_client_interest" name="Zájem klienta o produkt">
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- Advisor Tasks -->
+    <bpmn:userTask id="task_assess_client_profile" name="Posoudit profil klienta">
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:exclusiveGateway id="gateway_distribution_channel" name="Distribuční kanál">
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:outgoing>flow_face_to_face</bpmn:outgoing>
+      <bpmn:outgoing>flow_online</bpmn:outgoing>
+      <bpmn:outgoing>flow_phone</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:userTask id="task_face_to_face_consultation" name="Osobní konzultace">
+      <bpmn:incoming>flow_face_to_face</bpmn:incoming>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_online_distribution" name="Online distribuce">
+      <bpmn:incoming>flow_online</bpmn:incoming>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_phone_consultation" name="Telefonní konzultace">
+      <bpmn:incoming>flow_phone</bpmn:incoming>
+      <bpmn:outgoing>flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Exclusive Gateway Join -->
+    <bpmn:exclusiveGateway id="gateway_join_channels" name="Spojení kanálů">
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+      <bpmn:incoming>flow_5</bpmn:incoming>
+      <bpmn:outgoing>flow_6</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:userTask id="task_provide_information" name="Poskytnout informace klientovi">
+      <bpmn:incoming>flow_6</bpmn:incoming>
+      <bpmn:outgoing>flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Client Tasks -->
+    <bpmn:userTask id="task_client_information_review" name="Prostudovat informace">
+      <bpmn:incoming>flow_7</bpmn:incoming>
+      <bpmn:outgoing>flow_8</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_make_investment_decision" name="Učinit investiční rozhodnutí">
+      <bpmn:incoming>flow_8</bpmn:incoming>
+      <bpmn:outgoing>flow_9</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- MiFID II Compliance -->
+    <bpmn:exclusiveGateway id="gateway_mifid_compliance" name="MiFID II test?">
+      <bpmn:incoming>flow_9</bpmn:incoming>
+      <bpmn:outgoing>flow_mifid_required</bpmn:outgoing>
+      <bpmn:outgoing>flow_mifid_not_required</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:userTask id="task_conduct_suitability_test" name="Provést test vhodnosti">
+      <bpmn:incoming>flow_mifid_required</bpmn:incoming>
+      <bpmn:outgoing>flow_10</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:userTask id="task_document_advice" name="Zdokumentovat poradenství">
+      <bpmn:incoming>flow_10</bpmn:incoming>
+      <bpmn:outgoing>flow_11</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- Exclusive Gateway Join for MiFID -->
+    <bpmn:exclusiveGateway id="gateway_join_mifid" name="Spojení MiFID">
+      <bpmn:incoming>flow_11</bpmn:incoming>
+      <bpmn:incoming>flow_mifid_not_required</bpmn:incoming>
+      <bpmn:outgoing>flow_12</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:userTask id="task_process_order" name="Zpracovat objednávku">
+      <bpmn:incoming>flow_12</bpmn:incoming>
+      <bpmn:outgoing>flow_13</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <!-- System Tasks -->
+    <bpmn:serviceTask id="task_mifid_compliance_check" name="Kontrola souladu s MiFID II">
+      <bpmn:incoming>flow_13</bpmn:incoming>
+      <bpmn:outgoing>flow_14</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:exclusiveGateway id="gateway_compliance_passed" name="Compliance prošla?">
+      <bpmn:incoming>flow_14</bpmn:incoming>
+      <bpmn:outgoing>flow_compliance_ok</bpmn:outgoing>
+      <bpmn:outgoing>flow_compliance_fail</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <bpmn:serviceTask id="task_reject_order" name="Zamítnout objednávku">
+      <bpmn:incoming>flow_compliance_fail</bpmn:incoming>
+      <bpmn:outgoing>flow_15</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:serviceTask id="task_execute_order" name="Realizovat objednávku">
+      <bpmn:incoming>flow_compliance_ok</bpmn:incoming>
+      <bpmn:outgoing>flow_16</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:serviceTask id="task_send_confirmations" name="Odeslat potvrzení">
+      <bpmn:incoming>flow_16</bpmn:incoming>
+      <bpmn:outgoing>flow_17</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <!-- End Events -->
+    <bpmn:endEvent id="end_distribution_complete" name="Distribuce dokončena">
+      <bpmn:incoming>flow_17</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <bpmn:endEvent id="end_order_rejected" name="Objednávka zamítnuta">
+      <bpmn:incoming>flow_15</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Sequence Flows -->
+    <bpmn:sequenceFlow id="flow_1" sourceRef="start_client_interest" targetRef="task_assess_client_profile"/>
+    <bpmn:sequenceFlow id="flow_2" sourceRef="task_assess_client_profile" targetRef="gateway_distribution_channel"/>
+    <bpmn:sequenceFlow id="flow_face_to_face" name="Osobně" sourceRef="gateway_distribution_channel" targetRef="task_face_to_face_consultation"/>
+    <bpmn:sequenceFlow id="flow_online" name="Online" sourceRef="gateway_distribution_channel" targetRef="task_online_distribution"/>
+    <bpmn:sequenceFlow id="flow_phone" name="Telefon" sourceRef="gateway_distribution_channel" targetRef="task_phone_consultation"/>
+    <bpmn:sequenceFlow id="flow_3" sourceRef="task_face_to_face_consultation" targetRef="gateway_join_channels"/>
+    <bpmn:sequenceFlow id="flow_4" sourceRef="task_online_distribution" targetRef="gateway_join_channels"/>
+    <bpmn:sequenceFlow id="flow_5" sourceRef="task_phone_consultation" targetRef="gateway_join_channels"/>
+    <bpmn:sequenceFlow id="flow_6" sourceRef="gateway_join_channels" targetRef="task_provide_information"/>
+    <bpmn:sequenceFlow id="flow_7" sourceRef="task_provide_information" targetRef="task_client_information_review"/>
+    <bpmn:sequenceFlow id="flow_8" sourceRef="task_client_information_review" targetRef="task_make_investment_decision"/>
+    <bpmn:sequenceFlow id="flow_9" sourceRef="task_make_investment_decision" targetRef="gateway_mifid_compliance"/>
+    <bpmn:sequenceFlow id="flow_mifid_required" name="Ano" sourceRef="gateway_mifid_compliance" targetRef="task_conduct_suitability_test"/>
+    <bpmn:sequenceFlow id="flow_mifid_not_required" name="Ne" sourceRef="gateway_mifid_compliance" targetRef="gateway_join_mifid"/>
+    <bpmn:sequenceFlow id="flow_10" sourceRef="task_conduct_suitability_test" targetRef="task_document_advice"/>
+    <bpmn:sequenceFlow id="flow_11" sourceRef="task_document_advice" targetRef="gateway_join_mifid"/>
+    <bpmn:sequenceFlow id="flow_12" sourceRef="gateway_join_mifid" targetRef="task_process_order"/>
+    <bpmn:sequenceFlow id="flow_13" sourceRef="task_process_order" targetRef="task_mifid_compliance_check"/>
+    <bpmn:sequenceFlow id="flow_14" sourceRef="task_mifid_compliance_check" targetRef="gateway_compliance_passed"/>
+    <bpmn:sequenceFlow id="flow_compliance_ok" name="Ano" sourceRef="gateway_compliance_passed" targetRef="task_execute_order"/>
+    <bpmn:sequenceFlow id="flow_compliance_fail" name="Ne" sourceRef="gateway_compliance_passed" targetRef="task_reject_order"/>
+    <bpmn:sequenceFlow id="flow_15" sourceRef="task_reject_order" targetRef="end_order_rejected"/>
+    <bpmn:sequenceFlow id="flow_16" sourceRef="task_execute_order" targetRef="task_send_confirmations"/>
+    <bpmn:sequenceFlow id="flow_17" sourceRef="task_send_confirmations" targetRef="end_distribution_complete"/>
+    
+    <!-- Data Objects -->
+    <bpmn:dataObjectReference id="data_client_profile" name="Profil klienta" dataObjectRef="DataObject_1"/>
+    <bpmn:dataObject id="DataObject_1"/>
+    
+    <bpmn:dataObjectReference id="data_product_information" name="Informace o produktu" dataObjectRef="DataObject_2"/>
+    <bpmn:dataObject id="DataObject_2"/>
+    
+    <bpmn:dataObjectReference id="data_kid_document" name="KID dokument" dataObjectRef="DataObject_3"/>
+    <bpmn:dataObject id="DataObject_3"/>
+    
+    <bpmn:dataObjectReference id="data_prospectus" name="Prospekt" dataObjectRef="DataObject_4"/>
+    <bpmn:dataObject id="DataObject_4"/>
+    
+    <bpmn:dataObjectReference id="data_suitability_test" name="Test vhodnosti" dataObjectRef="DataObject_5"/>
+    <bpmn:dataObject id="DataObject_5"/>
+    
+    <bpmn:dataObjectReference id="data_investment_decision" name="Investiční rozhodnutí" dataObjectRef="DataObject_6"/>
+    <bpmn:dataObject id="DataObject_6"/>
+    
+    <bpmn:dataObjectReference id="data_order_confirmation" name="Potvrzení objednávky" dataObjectRef="DataObject_7"/>
+    <bpmn:dataObject id="DataObject_7"/>
+    
+    <!-- Data Associations -->
+    <bpmn:dataOutputAssociation id="data_out_1">
+      <bpmn:sourceRef>task_assess_client_profile</bpmn:sourceRef>
+      <bpmn:targetRef>data_client_profile</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataInputAssociation id="data_in_1">
+      <bpmn:sourceRef>data_product_information</bpmn:sourceRef>
+      <bpmn:targetRef>task_provide_information</bpmn:targetRef>
+    </bpmn:dataInputAssociation>
+    
+    <bpmn:dataInputAssociation id="data_in_2">
+      <bpmn:sourceRef>data_kid_document</bpmn:sourceRef>
+      <bpmn:targetRef>task_provide_information</bpmn:targetRef>
+    </bpmn:dataInputAssociation>
+    
+    <bpmn:dataInputAssociation id="data_in_3">
+      <bpmn:sourceRef>data_prospectus</bpmn:sourceRef>
+      <bpmn:targetRef>task_provide_information</bpmn:targetRef>
+    </bpmn:dataInputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_2">
+      <bpmn:sourceRef>task_conduct_suitability_test</bpmn:sourceRef>
+      <bpmn:targetRef>data_suitability_test</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_3">
+      <bpmn:sourceRef>task_make_investment_decision</bpmn:sourceRef>
+      <bpmn:targetRef>data_investment_decision</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+    
+    <bpmn:dataOutputAssociation id="data_out_4">
+      <bpmn:sourceRef>task_send_confirmations</bpmn:sourceRef>
+      <bpmn:targetRef>data_order_confirmation</bpmn:targetRef>
+    </bpmn:dataOutputAssociation>
+  </bpmn:process>
+  
+  <!-- DI Section -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_ProductDistribution">
+      <bpmndi:BPMNShape id="Pool_ProductDistribution_di" bpmnElement="Pool_ProductDistribution" isHorizontal="true">
+        <dc:Bounds x="100" y="50" width="2200" height="500"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Lanes -->
+      <bpmndi:BPMNShape id="Lane_Client_di" bpmnElement="Lane_Client" isHorizontal="true">
+        <dc:Bounds x="130" y="50" width="2170" height="120"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_Advisor_di" bpmnElement="Lane_Advisor" isHorizontal="true">
+        <dc:Bounds x="130" y="170" width="2170" height="230"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Lane_System_di" bpmnElement="Lane_System" isHorizontal="true">
+        <dc:Bounds x="130" y="400" width="2170" height="150"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Start Event -->
+      <bpmndi:BPMNShape id="start_client_interest_di" bpmnElement="start_client_interest">
+        <dc:Bounds x="180" y="92" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="155" y="135" width="86" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Advisor Lane Elements -->
+      <bpmndi:BPMNShape id="task_assess_client_profile_di" bpmnElement="task_assess_client_profile">
+        <dc:Bounds x="280" y="210" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="gateway_distribution_channel_di" bpmnElement="gateway_distribution_channel" isMarkerVisible="true">
+        <dc:Bounds x="445" y="225" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="425" y="195" width="90" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_face_to_face_consultation_di" bpmnElement="task_face_to_face_consultation">
+        <dc:Bounds x="560" y="180" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_online_distribution_di" bpmnElement="task_online_distribution">
+        <dc:Bounds x="560" y="210" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_phone_consultation_di" bpmnElement="task_phone_consultation">
+        <dc:Bounds x="560" y="300" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="gateway_join_channels_di" bpmnElement="gateway_join_channels">
+        <dc:Bounds x="725" y="225" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="708" y="195" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_provide_information_di" bpmnElement="task_provide_information">
+        <dc:Bounds x="840" y="210" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- Client Lane Elements -->
+      <bpmndi:BPMNShape id="task_client_information_review_di" bpmnElement="task_client_information_review">
+        <dc:Bounds x="1000" y="70" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_make_investment_decision_di" bpmnElement="task_make_investment_decision">
+        <dc:Bounds x="1160" y="70" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- MiFID Compliance Elements -->
+      <bpmndi:BPMNShape id="gateway_mifid_compliance_di" bpmnElement="gateway_mifid_compliance" isMarkerVisible="true">
+        <dc:Bounds x="1325" y="225" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1305" y="195" width="90" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_conduct_suitability_test_di" bpmnElement="task_conduct_suitability_test">
+        <dc:Bounds x="1440" y="180" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_document_advice_di" bpmnElement="task_document_advice">
+        <dc:Bounds x="1600" y="180" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="gateway_join_mifid_di" bpmnElement="gateway_join_mifid">
+        <dc:Bounds x="1765" y="225" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1748" y="195" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_process_order_di" bpmnElement="task_process_order">
+        <dc:Bounds x="1880" y="210" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- System Lane Elements -->
+      <bpmndi:BPMNShape id="task_mifid_compliance_check_di" bpmnElement="task_mifid_compliance_check">
+        <dc:Bounds x="1880" y="440" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="gateway_compliance_passed_di" bpmnElement="gateway_compliance_passed" isMarkerVisible="true">
+        <dc:Bounds x="2045" y="455" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2025" y="425" width="90" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_reject_order_di" bpmnElement="task_reject_order">
+        <dc:Bounds x="2020" y="520" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_execute_order_di" bpmnElement="task_execute_order">
+        <dc:Bounds x="1720" y="440" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="task_send_confirmations_di" bpmnElement="task_send_confirmations">
+        <dc:Bounds x="1560" y="440" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      
+      <!-- End Events -->
+      <bpmndi:BPMNShape id="end_distribution_complete_di" bpmnElement="end_distribution_complete">
+        <dc:Bounds x="1402" y="462" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1382" y="505" width="76" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="end_order_rejected_di" bpmnElement="end_order_rejected">
+        <dc:Bounds x="2202" y="542" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2182" y="585" width="76" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Data Objects -->
+      <bpmndi:BPMNShape id="data_client_profile_di" bpmnElement="data_client_profile">
+        <dc:Bounds x="310" y="140" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="286" y="120" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_product_information_di" bpmnElement="data_product_information">
+        <dc:Bounds x="870" y="140" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="846" y="120" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_kid_document_di" bpmnElement="data_kid_document">
+        <dc:Bounds x="910" y="140" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="886" y="120" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_prospectus_di" bpmnElement="data_prospectus">
+        <dc:Bounds x="950" y="140" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="926" y="120" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_suitability_test_di" bpmnElement="data_suitability_test">
+        <dc:Bounds x="1470" y="140" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1446" y="120" width="84" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_investment_decision_di" bpmnElement="data_investment_decision">
+        <dc:Bounds x="1190" y="20" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1166" y="5" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="data_order_confirmation_di" bpmnElement="data_order_confirmation">
+        <dc:Bounds x="1590" y="380" width="36" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1566" y="360" width="84" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <!-- Sequence Flows -->
+      <bpmndi:BPMNEdge id="flow_1_di" bpmnElement="flow_1">
+        <di:waypoint x="198" y="128"/>
+        <di:waypoint x="198" y="250"/>
+        <di:waypoint x="280" y="250"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_2_di" bpmnElement="flow_2">
+        <di:waypoint x="380" y="250"/>
+        <di:waypoint x="445" y="250"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_face_to_face_di" bpmnElement="flow_face_to_face">
+        <di:waypoint x="470" y="225"/>
+        <di:waypoint x="470" y="220"/>
+        <di:waypoint x="560" y="220"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="480" y="202" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_online_di" bpmnElement="flow_online">
+        <di:waypoint x="495" y="250"/>
+        <di:waypoint x="560" y="250"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="508" y="232" width="30" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_phone_di" bpmnElement="flow_phone">
+        <di:waypoint x="470" y="275"/>
+        <di:waypoint x="470" y="340"/>
+        <di:waypoint x="560" y="340"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="480" y="322" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_3_di" bpmnElement="flow_3">
+        <di:waypoint x="660" y="220"/>
+        <di:waypoint x="692" y="220"/>
+        <di:waypoint x="692" y="250"/>
+        <di:waypoint x="725" y="250"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_4_di" bpmnElement="flow_4">
+        <di:waypoint x="660" y="250"/>
+        <di:waypoint x="725" y="250"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_5_di" bpmnElement="flow_5">
+        <di:waypoint x="660" y="340"/>
+        <di:waypoint x="692" y="340"/>
+        <di:waypoint x="692" y="250"/>
+        <di:waypoint x="725" y="250"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_6_di" bpmnElement="flow_6">
+        <di:waypoint x="775" y="250"/>
+        <di:waypoint x="840" y="250"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_7_di" bpmnElement="flow_7">
+        <di:waypoint x="890" y="210"/>
+        <di:waypoint x="890" y="110"/>
+        <di:waypoint x="1000" y="110"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_8_di" bpmnElement="flow_8">
+        <di:waypoint x="1100" y="110"/>
+        <di:waypoint x="1160" y="110"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_9_di" bpmnElement="flow_9">
+        <di:waypoint x="1210" y="150"/>
+        <di:waypoint x="1210" y="250"/>
+        <di:waypoint x="1325" y="250"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_mifid_required_di" bpmnElement="flow_mifid_required">
+        <di:waypoint x="1350" y="225"/>
+        <di:waypoint x="1350" y="220"/>
+        <di:waypoint x="1440" y="220"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1385" y="202" width="20" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_mifid_not_required_di" bpmnElement="flow_mifid_not_required">
+        <di:waypoint x="1350" y="275"/>
+        <di:waypoint x="1350" y="330"/>
+        <di:waypoint x="1790" y="330"/>
+        <di:waypoint x="1790" y="275"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1565" y="312" width="15" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_10_di" bpmnElement="flow_10">
+        <di:waypoint x="1540" y="220"/>
+        <di:waypoint x="1600" y="220"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_11_di" bpmnElement="flow_11">
+        <di:waypoint x="1700" y="220"/>
+        <di:waypoint x="1732" y="220"/>
+        <di:waypoint x="1732" y="250"/>
+        <di:waypoint x="1765" y="250"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_12_di" bpmnElement="flow_12">
+        <di:waypoint x="1815" y="250"/>
+        <di:waypoint x="1880" y="250"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_13_di" bpmnElement="flow_13">
+        <di:waypoint x="1930" y="290"/>
+        <di:waypoint x="1930" y="440"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_14_di" bpmnElement="flow_14">
+        <di:waypoint x="1980" y="480"/>
+        <di:waypoint x="2045" y="480"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_compliance_ok_di" bpmnElement="flow_compliance_ok">
+        <di:waypoint x="2045" y="480"/>
+        <di:waypoint x="1820" y="480"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1927" y="462" width="20" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_compliance_fail_di" bpmnElement="flow_compliance_fail">
+        <di:waypoint x="2070" y="505"/>
+        <di:waypoint x="2070" y="520"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2078" y="510" width="15" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_15_di" bpmnElement="flow_15">
+        <di:waypoint x="2120" y="560"/>
+        <di:waypoint x="2202" y="560"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_16_di" bpmnElement="flow_16">
+        <di:waypoint x="1720" y="480"/>
+        <di:waypoint x="1660" y="480"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="flow_17_di" bpmnElement="flow_17">
+        <di:waypoint x="1560" y="480"/>
+        <di:waypoint x="1438" y="480"/>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Data Associations -->
+      <bpmndi:BPMNEdge id="data_out_1_di" bpmnElement="data_out_1">
+        <di:waypoint x="330" y="210"/>
+        <di:waypoint x="328" y="190"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_in_1_di" bpmnElement="data_in_1">
+        <di:waypoint x="888" y="190"/>
+        <di:waypoint x="890" y="210"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_in_2_di" bpmnElement="data_in_2">
+        <di:waypoint x="928" y="190"/>
+        <di:waypoint x="920" y="210"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_in_3_di" bpmnElement="data_in_3">
+        <di:waypoint x="968" y="190"/>
+        <di:waypoint x="940" y="210"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_2_di" bpmnElement="data_out_2">
+        <di:waypoint x="1490" y="180"/>
+        <di:waypoint x="1488" y="190"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_3_di" bpmnElement="data_out_3">
+        <di:waypoint x="1210" y="70"/>
+        <di:waypoint x="1208" y="70"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="data_out_4_di" bpmnElement="data_out_4">
+        <di:waypoint x="1610" y="440"/>
+        <di:waypoint x="1608" y="430"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

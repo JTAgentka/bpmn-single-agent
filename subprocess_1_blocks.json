@@ -1,0 +1,125 @@
+{
+  "subprocess_id": "subprocess_1",
+  "subprocess_name": "Product Initiation",
+  "building_blocks": [
+    {
+      "id": "start_client_request",
+      "role": "Client",
+      "name": "Klientská poptávka",
+      "type": "startEvent",
+      "purpose": "Iniciace procesu na základě požadavku klienta"
+    },
+    {
+      "id": "start_market_opportunity",
+      "role": "Financial Markets Division",
+      "name": "Tržní příležitost",
+      "type": "startEvent",
+      "purpose": "Iniciace na základě monitoringu trhu"
+    },
+    {
+      "id": "start_new_emission",
+      "role": "ONE Department",
+      "name": "Nová emise",
+      "type": "startEvent",
+      "purpose": "Iniciace na základě nové emise"
+    },
+    {
+      "id": "start_unique_idea",
+      "role": "Bank Employee",
+      "name": "Inovativní nápad",
+      "type": "startEvent",
+      "purpose": "Iniciace na základě unikátního nápadu"
+    },
+    {
+      "id": "task_document_initiative",
+      "role": "Initiator",
+      "name": "Dokumentovat podnět",
+      "type": "userTask",
+      "purpose": "Vyplnění všech požadovaných informací o produktu"
+    },
+    {
+      "id": "gateway_completeness",
+      "role": "System",
+      "name": "Je podnět kompletní?",
+      "type": "exclusiveGateway",
+      "purpose": "Kontrola úplnosti podnětu"
+    },
+    {
+      "id": "task_request_completion",
+      "role": "ODIC",
+      "name": "Vyžádat doplnění",
+      "type": "userTask",
+      "purpose": "Požadavek na doplnění chybějících informací"
+    },
+    {
+      "id": "task_submit_initiative",
+      "role": "Initiator",
+      "name": "Podat písemný podnět",
+      "type": "userTask",
+      "purpose": "Formální předložení podnětu na ODIC"
+    },
+    {
+      "id": "gateway_accelerated",
+      "role": "ODIC",
+      "name": "Zrychlený režim?",
+      "type": "exclusiveGateway",
+      "purpose": "Rozhodnutí o použití zrychleného režimu"
+    },
+    {
+      "id": "task_archive_initiative",
+      "role": "ODIC",
+      "name": "Archivovat podnět",
+      "type": "serviceTask",
+      "purpose": "Elektronická archivace podnětu"
+    },
+    {
+      "id": "task_accelerated_processing",
+      "role": "ODIC",
+      "name": "Zpracovat zrychleně",
+      "type": "userTask",
+      "purpose": "Implementace ve zrychleném režimu"
+    },
+    {
+      "id": "task_standard_processing",
+      "role": "ODIC",
+      "name": "Standardní zpracování",
+      "type": "userTask",
+      "purpose": "Příprava návrhu pro VIN"
+    },
+    {
+      "id": "end_accelerated",
+      "role": "System",
+      "name": "Zrychlená implementace",
+      "type": "endEvent",
+      "purpose": "Ukončení zrychlenou cestou"
+    },
+    {
+      "id": "end_standard",
+      "role": "System",
+      "name": "Předat k schválení",
+      "type": "endEvent",
+      "purpose": "Předání do schvalovacího procesu"
+    }
+  ],
+  "exception_paths": [
+    {
+      "id": "timeout_completion",
+      "name": "Timeout doplnění",
+      "type": "boundaryTimer",
+      "attached_to": "task_request_completion",
+      "purpose": "7denní lhůta pro doplnění podnětu"
+    }
+  ],
+  "data_objects": [
+    {
+      "id": "data_initiative_document",
+      "name": "Dokument podnětu",
+      "purpose": "Hlavní dokument s informacemi o produktu"
+    },
+    {
+      "id": "data_product_list",
+      "name": "Produktový list",
+      "purpose": "Šablona pro implementaci produktu"
+    }
+  ]
+}
