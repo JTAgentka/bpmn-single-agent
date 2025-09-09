@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analýza podnikových požadavků - Konsolidace dotazníků</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #007bff;
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 300;
+        }
+        
+        .metadata {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        
+        .metadata table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .metadata td {
+            padding: 5px 10px;
+            border: none;
+        }
+        
+        .metadata td:first-child {
+            font-weight: bold;
+            color: #007bff;
+            width: 120px;
+        }
+        
+        h1 {
+            color: #007bff;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+        
+        h2 {
+            color: #495057;
+            margin-top: 30px;
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+        }
+        
+        h3 {
+            color: #6c757d;
+            margin-top: 25px;
+        }
+        
+        h4 {
+            color: #6c757d;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+        
+        .section {
+            margin: 30px 0;
+        }
+        
+        .card {
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            font-weight: bold;
+        }
+        
+        .card-body {
+            padding: 15px;
+        }
+        
+        .priority-critical {
+            border-left: 4px solid #dc3545;
+        }
+        
+        .priority-high {
+            border-left: 4px solid #fd7e14;
+        }
+        
+        .priority-medium {
+            border-left: 4px solid #ffc107;
+        }
+        
+        .priority-low {
+            border-left: 4px solid #28a745;
+        }
+        
+        .complexity-high {
+            background-color: #fff5f5;
+        }
+        
+        .complexity-medium {
+            background-color: #fffbf0;
+        }
+        
+        .complexity-low {
+            background-color: #f0fff4;
+        }
+        
+        .requirement-item {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .requirement-id {
+            font-weight: bold;
+            color: #007bff;
+            font-size: 0.9em;
+        }
+        
+        .acceptance-criteria {
+            background-color: #e7f3ff;
+            border-left: 4px solid #007bff;
+            padding: 10px 15px;
+            margin: 10px 0;
+        }
+        
+        .acceptance-criteria ul {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+        
+        .moscow {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .moscow.must-have {
+            background-color: #dc3545;
+        }
+        
+        .moscow.should-have {
+            background-color: #fd7e14;
+        }
+        
+        .moscow.could-have {
+            background-color: #ffc107;
+            color: #000;
+        }
+        
+        .moscow.wont-have {
+            background-color: #6c757d;
+        }
+        
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .metrics-table th,
+        .metrics-table td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .metrics-table th {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .metrics-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .problem-area {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .problem-title {
+            font-weight: bold;
+            color: #856404;
+        }
+        
+        .solution-benefit {
+            background-color: #d1edff;
+            border: 1px solid #a7e3ff;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .risk {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-left: 4px solid #dc3545;
+            padding: 10px 15px;
+            margin: 10px 0;
+        }
+        
+        .assumption {
+            background-color: #e2e3e5;
+            border: 1px solid #d6d8db;
+            border-left: 4px solid #6c757d;
+            padding: 10px 15px;
+            margin: 10px 0;
+        }
+        
+        .success-metric {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .toc {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+        
+        .toc ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .toc li {
+            margin: 8px 0;
+        }
+        
+        .toc a {
+            color: #007bff;
+            text-decoration: none;
+            padding: 5px 0;
+            display: block;
+        }
+        
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        
+        .stakeholder {
+            display: inline-block;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 5px 10px;
+            margin: 3px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+        
+        .system-impact {
+            background-color: #fff8e1;
+            border: 1px solid #ffecb3;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .timeline {
+            background-color: #e8f5e8;
+            border: 1px solid #c8e6c8;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .footer {
+            border-top: 1px solid #dee2e6;
+            margin-top: 50px;
+            padding-top: 30px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        @media print {
+            body {
+                background-color: white;
+                font-size: 12px;
+            }
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Analýza podnikových požadavků</h1>
+            <h2 style="color: #6c757d; border: none; margin: 10px 0;">Konsolidace dotazníků</h2>
+        </div>
+
+        <div class="metadata">
+            <table>
+                <tr><td>Verze:</td><td>1.0</td></tr>
+                <tr><td>Datum:</td><td>9. září 2025</td></tr>
+                <tr><td>Projekt:</td><td>Questionnaire Consolidation Initiative (AML, KYC, Investment)</td></tr>
+                <tr><td>Framework:</td><td>BIAN</td></tr>
+                <tr><td>Autor:</td><td>Business Analyst</td></tr>
+            </table>
+        </div>
+
+        <div class="toc">
+            <h3>Obsah dokumentu</h3>
+            <ul>
+                <li><a href="#kapitola-1">1. Popis požadavků</a></li>
+                <li><a href="#kapitola-2">2. As-is stav popis</a></li>
+                <li><a href="#kapitola-3">3. To-be stav popis</a></li>
+                <li><a href="#acceptance-criteria">Acceptance Criteria</a></li>
+                <li><a href="#assumptions">Assumptions</a></li>
+                <li><a href="#success-metrics">Success Metrics</a></li>
+            </ul>
+        </div>
+
+        <section class="section" id="kapitola-1">
+            <h1>1. Popis požadavků</h1>
+
+            <div class="card">
+                <div class="card-header">Základní popis</div>
+                <div class="card-body">
+                    <h4>Problém (Proč)</h4>
+                    <div class="problem-area">
+                        Banka v současnosti provozuje více separátních aplikací pro dotazníky AML (Anti-Money Laundering), KYC (Know Your Customer) a investiční profily klientů. Tato fragmentace způsobuje duplicitní zadávání údajů, zvyšuje administrativní zátěž, komplikuje správu dat a snižuje uživatelskou zkušenost jak pro klienty, tak pro zaměstnance banky. Navíc je plánováno ukončení provozu legacy CRM systému do června 2025, což vyžaduje migraci stávajících dat a funkcionalit.
+                    </div>
+
+                    <h4>Návrh řešení (Jak)</h4>
+                    <p>Řešení spočívá v konsolidaci všech dotazníkových aplikací do jediné sjednocené platformy, která bude integrována prostřednictvím stávající ESB WSO2 API infrastruktury a Kafka streaming platformy. Navrhovaná architektura využívá BIAN framework s 6 klíčovými doménami služeb.</p>
+
+                    <h4>Řešení (Co)</h4>
+                    <div class="solution-benefit">
+                        Výsledkem bude nová sjednocená dotazníková platforma, která poskytne jediné rozhraní pro všechny typy dotazníků, eliminuje duplicitní zadávání dat, zjednoduší administraci a zlepší uživatelskou zkušenost. Systém bude operativní do června 2026 s 50% zlepšením procesní efektivity a dostupností 99,9%.
+                    </div>
+                </div>
+            </div>
+
+            <h2>Rozsah procesních požadavků</h2>
+            
+            <h3>Zahrnuté procesy</h3>
+            <div class="requirement-item priority-critical">
+                <div class="requirement-id">BRQ01 - Sjednocené onboarding klientů</div>
+                <p><strong>Složitost:</strong> Vysoká - Kritický proces ovlivňující všechny domény</p>
+                <p><strong>Dopad:</strong> Kompletní přepracování procesu přijímání nových klientů s integrací všech typů dotazníků</p>
+            </div>
+
+            <div class="requirement-item priority-critical">
+                <div class="requirement-id">BRQ02 - Administrace AML dotazníků</div>
+                <p><strong>Složitost:</strong> Vysoká - Regulatorní požadavky a compliance</p>
+                <p><strong>Dopad:</strong> Centralizace správy anti-money laundering procesů</p>
+            </div>
+
+            <div class="requirement-item priority-critical">
+                <div class="requirement-id">BRQ03 - Administrace KYC dotazníků</div>
+                <p><strong>Složitost:</strong> Vysoká - Know Your Customer compliance</p>
+                <p><strong>Dopad:</strong> Sjednocení procesů ověřování identity klientů</p>
+            </div>
+
+            <div class="requirement-item priority-high">
+                <div class="requirement-id">BRQ04 - Hodnocení investičního profilu</div>
+                <p><strong>Složitost:</strong> Střední - Integrace s evaluačními algoritmy</p>
+                <p><strong>Dopad:</strong> Zlepšení procesu určování vhodnosti investičních produktů</p>
+            </div>
+
+            <h3>Hlavní omezení</h3>
+            <ul>
+                <li><span style="color: #dc3545;">🔴</span> Stávající evaluační algoritmy zůstávají nezměněny</li>
+                <li><span style="color: #dc3545;">🔴</span> Povinné dokončení do června 2026</li>
+                <li><span style="color: #dc3545;">🔴</span> Zachování regulatorní compliance během celé migrace</li>
+                <li><span style="color: #fd7e14;">🟠</span> Integrace musí využívat stávající ESB WSO2 a Kafka infrastrukturu</li>
+            </ul>
+
+            <h2>Rozsah business požadavků</h2>
+            
+            <h3>Zahrnuté business oblasti</h3>
+            <div class="stakeholder">Investment Center - Aktivní stakeholder</div>
+            <div class="stakeholder">Banking Center - Primární uživatelé</div>
+            <div class="stakeholder">Compliance - Kritické zapojení</div>
+            <div class="stakeholder">IT Operations - Technická podpora</div>
+
+            <h3>Tvrdá omezení</h3>
+            <table class="metrics-table">
+                <tr>
+                    <th>Typ omezení</th>
+                    <th>Popis</th>
+                    <th>Dopad</th>
+                </tr>
+                <tr>
+                    <td><strong>Regulatorní</strong></td>
+                    <td>Kompletní AML a KYC compliance podle platných předpisů</td>
+                    <td><span style="color: #dc3545;">Kritické</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Technické</strong></td>
+                    <td>Integrace pouze přes stávající ESB WSO2 API</td>
+                    <td><span style="color: #fd7e14;">Vysoké</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Časové</strong></td>
+                    <td>Pevný termín dokončení do června 2026</td>
+                    <td><span style="color: #dc3545;">Kritické</span></td>
+                </tr>
+            </table>
+        </section>
+
+        <section class="section" id="kapitola-2">
+            <h1>2. As-is stav popis</h1>
+
+            <div class="card">
+                <div class="card-header">Popis aktuálního stavu</div>
+                <div class="card-body">
+                    <p>Banka v současnosti provozuje fragmentovanou systémovou krajinu s více oddělených aplikací pro různé typy dotazníků. Každá aplikace má vlastní databázi, uživatelské rozhraní a administrační procesy.</p>
+
+                    <h4>Problémové oblasti</h4>
+                    
+                    <div class="problem-area">
+                        <div class="problem-title">1. Duplicitní zadávání údajů</div>
+                        <p><strong>Popis:</strong> Klienti musí opakovaně zadávat stejné základní údaje v různých aplikacích</p>
+                        <p><strong>Dopad:</strong> Snížená uživatelská spokojenost, zvýšené riziko chyb</p>
+                    </div>
+
+                    <div class="problem-area">
+                        <div class="problem-title">2. Fragmentovaná administrace</div>
+                        <p><strong>Popis:</strong> Zaměstnanci musí používat více různých systémů s odlišnými rozhraními</p>
+                        <p><strong>Dopad:</strong> Vyšší náklady na školení, snížená efektivita</p>
+                    </div>
+
+                    <div class="problem-area">
+                        <div class="problem-title">3. Nekonzistentní data</div>
+                        <p><strong>Popis:</strong> Absence centrálního úložiště zákazníkových profilů</p>
+                        <p><strong>Dopad:</strong> Riziko rozporuplných informací, složitější reporting</p>
+                    </div>
+
+                    <div class="problem-area">
+                        <div class="problem-title">4. Zastaralá technologie</div>
+                        <p><strong>Popis:</strong> Legacy CRM systém vyžaduje ukončení provozu do června 2025</p>
+                        <p><strong>Dopad:</strong> Technický dluh, bezpečnostní rizika</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="kapitola-3">
+            <h1>3. To-be stav popis</h1>
+
+            <div class="solution-benefit">
+                <h3>Základní popis řešení</h3>
+                <p>Nová sjednocená dotazníková platforma představuje komplexní řešení, které konsoliduje všechny stávající separátní aplikace do jednoho integrovaného systému využívajícího moderní microservices architekturu založenou na BIAN framework.</p>
+                
+                <h4>Výhody řešení:</h4>
+                <ul>
+                    <li>Eliminace duplicitního zadávání dat</li>
+                    <li>Sjednocené uživatelské rozhraní pro všechny typy dotazníků</li>
+                    <li>Centralizované řízení verzí a administrace</li>
+                    <li>Zlepšená uživatelská zkušenost</li>
+                    <li>Snížené provozní náklady</li>
+                    <li>Lepší compliance monitoring</li>
+                </ul>
+            </div>
+
+            <h2>Seznam business požadavků</h2>
+            
+            <div class="requirement-item priority-critical">
+                <div class="requirement-id">BR01 - Konsolidace aplikací pro dotazníky</div>
+                <p><strong>Business cíl:</strong> Zjednodušení administrativy a eliminace duplicit</p>
+                <p><strong>Výsledek:</strong> Jedna aplikace místo tří separátních systémů</p>
+                <p><strong>Měření:</strong> Počet systémů snížen ze 3 na 1</p>
+                <span class="moscow must-have">MUST HAVE</span>
+            </div>
+
+            <div class="requirement-item priority-high">
+                <div class="requirement-id">BR02 - Zlepšení uživatelské zkušenosti</div>
+                <p><strong>Business cíl:</strong> Zvýšení spokojenosti klientů a efektivity zaměstnanců</p>
+                <p><strong>Výsledek:</strong> Jednotné rozhraní, rychlejší procesy, méně chyb</p>
+                <p><strong>Měření:</strong> Spokojenost uživatelů >4.0/5.0, čas dokončení snížen o 50%</p>
+                <span class="moscow must-have">MUST HAVE</span>
+            </div>
+
+            <h2>Seznam funkčních požadavků</h2>
+
+            <div class="card">
+                <div class="card-header">Must Have požadavky (Priorita 1)</div>
+                <div class="card-body">
+                    <div class="requirement-item">
+                        <div class="requirement-id">FR01 - Sjednocená platforma dotazníků</div>
+                        <p>Systém musí podporovat všechny typy dotazníků (AML, KYC, investiční) v rámci jediné aplikace</p>
+                        <div class="acceptance-criteria">
+                            <strong>Acceptance criteria:</strong>
+                            <ul>
+                                <li>Všechny tři typy dotazníků dostupné z jednoho rozhraní</li>
+                                <li>Jednotný datový model pro všechny responses</li>
+                                <li>Centralizované administrační rozhraní</li>
+                                <li>Cross-reference mezi různými typy dotazníků</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="requirement-item">
+                        <div class="requirement-id">FR02 - Zachování evaluačních algoritmů</div>
+                        <p>Stávající algoritmy pro risk scoring a compliance zůstávají nezměněny</p>
+                        <div class="acceptance-criteria">
+                            <strong>Acceptance criteria:</strong>
+                            <ul>
+                                <li>API integrace s legacy evaluation engine</li>
+                                <li>Identické výsledky jako v současných systémech</li>
+                                <li>Žádné změny v business logice</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2>Seznam ne-funkčních požadavků</h2>
+
+            <table class="metrics-table">
+                <tr>
+                    <th>ID</th>
+                    <th>Kategorie</th>
+                    <th>Požadavek</th>
+                    <th>Target hodnota</th>
+                    <th>Priorita</th>
+                </tr>
+                <tr>
+                    <td>NFR01</td>
+                    <td>Performance</td>
+                    <td>Doba odezvy systému</td>
+                    <td>&lt;2 sekundy pro 95% transakcí</td>
+                    <td><span style="color: #fd7e14;">Vysoká</span></td>
+                </tr>
+                <tr>
+                    <td>NFR02</td>
+                    <td>Availability</td>
+                    <td>Dostupnost systému</td>
+                    <td>99.9% uptime</td>
+                    <td><span style="color: #dc3545;">Kritická</span></td>
+                </tr>
+                <tr>
+                    <td>NFR03</td>
+                    <td>Security</td>
+                    <td>Zabezpečení dat</td>
+                    <td>Compliance s bankovními standardy a GDPR</td>
+                    <td><span style="color: #dc3545;">Kritická</span></td>
+                </tr>
+                <tr>
+                    <td>NFR05</td>
+                    <td>Usability</td>
+                    <td>Uživatelská přívětivost</td>
+                    <td>User satisfaction score &gt;4.0/5.0</td>
+                    <td><span style="color: #fd7e14;">Vysoká</span></td>
+                </tr>
+            </table>
+
+            <h2>Dopad na systémy</h2>
+
+            <div class="system-impact">
+                <h4>Nový sjednocený dotazníkový systém</h4>
+                <p><strong>Složitost:</strong> Vysoká | <strong>Dopad:</strong> Nový systém - Core aplikace</p>
+                <ul>
+                    <li>Kompletně nový microservices-based systém</li>
+                    <li>BIAN architecture s 6 service domains</li>
+                    <li>Modern web UI s responsive designem</li>
+                    <li>API-first approach s comprehensive documentation</li>
+                </ul>
+            </div>
+
+            <div class="system-impact">
+                <h4>ESB WSO2 API Gateway</h4>
+                <p><strong>Složitost:</strong> Střední | <strong>Dopad:</strong> Rozšíření - Nové API integrace</p>
+                <ul>
+                    <li>Přidání nových API endpoints pro dotazníkovou platformu</li>
+                    <li>Rozšíření security policies</li>
+                    <li>Enhanced monitoring pro nové služby</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="section" id="acceptance-criteria">
+            <h1>Acceptance Criteria</h1>
+
+            <div class="card">
+                <div class="card-header">Měřitelné podmínky úspěchu</div>
+                <div class="card-body">
+                    <div class="acceptance-criteria">
+                        <strong>1. Funkční konsolidace</strong>
+                        <p><strong>Pass:</strong> 100% funkcionalita AML, KYC a investičních dotazníků v novém systému</p>
+                        <p><strong>Fail:</strong> Jakákoli funkcionalita chybí nebo nefunguje správně</p>
+                    </div>
+
+                    <div class="acceptance-criteria">
+                        <strong>2. Migrace dat</strong>
+                        <p><strong>Pass:</strong> Zero data loss, 100% data integrity validation passed</p>
+                        <p><strong>Fail:</strong> Jakákoli ztráta dat nebo failed validation checks</p>
+                    </div>
+
+                    <div class="acceptance-criteria">
+                        <strong>3. Performance</strong>
+                        <p><strong>Pass:</strong> Response time &lt;2s pro 95% transakcí podle monitoring dat</p>
+                        <p><strong>Fail:</strong> Response time přesahuje 2 sekundy pro více než 5% transakcí</p>
+                    </div>
+
+                    <div class="acceptance-criteria">
+                        <strong>4. Compliance</strong>
+                        <p><strong>Pass:</strong> Úspěšný compliance audit bez findings</p>
+                        <p><strong>Fail:</strong> Jakékoli compliance violations</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="assumptions">
+            <h1>Assumptions (Předpoklady)</h1>
+
+            <h2>Business předpoklady</h2>
+            <div class="assumption">
+                <strong>Stakeholder buy-in:</strong> Všichni klíčoví stakeholders podporují konsolidaci
+                <br><strong>Riziko:</strong> Střední - odpor ke změnám
+            </div>
+
+            <div class="assumption">
+                <strong>Regulatorní stabilita:</strong> AML a KYC regulace zůstanou stabilní během implementace
+                <br><strong>Riziko:</strong> Nízké - banking regulations jsou relativně stabilní
+            </div>
+
+            <h2>Technické předpoklady</h2>
+            <div class="assumption">
+                <strong>Infrastructure availability:</strong> ESB WSO2 a Kafka zůstanou dostupné a stabilní
+                <br><strong>Riziko:</strong> Nízké - proven infrastructure
+            </div>
+
+            <div class="assumption">
+                <strong>Legacy system access:</strong> CRM systém zůstane přístupný pro migraci dat
+                <br><strong>Riziko:</strong> Střední - aging system reliability
+            </div>
+
+            <h2>Resource předpoklady</h2>
+            <div class="assumption">
+                <strong>Skilled personnel:</strong> Dostupnost qualified IT specialistů
+                <br><strong>Riziko:</strong> Vysoké - talent shortage na trhu
+            </div>
+        </section>
+
+        <section class="section" id="success-metrics">
+            <h1>Success Metrics (Metriky úspěchu)</h1>
+
+            <h2>Business KPIs</h2>
+            
+            <div class="success-metric">
+                <h4>Process Efficiency Gain</h4>
+                <p><strong>Baseline:</strong> Průměrný čas 45 minut</p>
+                <p><strong>Target:</strong> Snížení o 50% na 22.5 minut</p>
+                <p><strong>Timeframe:</strong> 3 měsíce po go-live</p>
+                <p><strong>Measurement:</strong> Process timing analytics</p>
+            </div>
+
+            <div class="success-metric">
+                <h4>User Satisfaction Score</h4>
+                <p><strong>Baseline:</strong> Current average 3.2/5.0</p>
+                <p><strong>Target:</strong> >4.0/5.0</p>
+                <p><strong>Timeframe:</strong> 6 měsíců po go-live</p>
+                <p><strong>Measurement:</strong> Quarterly satisfaction surveys</p>
+            </div>
+
+            <h2>Technical KPIs</h2>
+
+            <table class="metrics-table">
+                <tr>
+                    <th>Metrika</th>
+                    <th>Baseline</th>
+                    <th>Target</th>
+                    <th>Měření</th>
+                </tr>
+                <tr>
+                    <td>System Availability</td>
+                    <td>N/A - nový systém</td>
+                    <td>99.9%</td>
+                    <td>Continuous monitoring</td>
+                </tr>
+                <tr>
+                    <td>Response Time</td>
+                    <td>Current 3-8 seconds</td>
+                    <td>&lt;2 sekundy pro 95% transakcí</td>
+                    <td>APM tools</td>
+                </tr>
+                <tr>
+                    <td>Error Rate</td>
+                    <td>Current ~0.5%</td>
+                    <td>&lt;0.1%</td>
+                    <td>Error tracking systems</td>
+                </tr>
+            </table>
+
+            <h2>Measuring Methods</h2>
+            <div class="timeline">
+                <p><strong>Real-time:</strong> System performance, Availability, Error rates</p>
+                <p><strong>Daily:</strong> Data quality metrics, Transaction volumes</p>
+                <p><strong>Weekly:</strong> Process efficiency, User adoption rates</p>
+                <p><strong>Monthly:</strong> Cost metrics, Compliance metrics</p>
+                <p><strong>Quarterly:</strong> User satisfaction, Business impact assessment</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <h1>Závěr</h1>
+            <div class="solution-benefit">
+                <p>Tento dokument představuje komplexní analýzu požadavků pro konsolidaci dotazníkových aplikací banky. Implementace sjednocené platformy přinese významné výhody v podobě zlepšené uživatelské zkušenosti, snížených nákladů a lepší compliance.</p>
+                
+                <h3>Klíčové faktory úspěchu:</h3>
+                <ul>
+                    <li><strong>Silná podpora managementu</strong> - Kritické pro úspěch</li>
+                    <li><strong>Efektivní change management</strong> - Zajištění adopce</li>
+                    <li><strong>Kvalitní testování a validace</strong> - Minimalizace rizik</li>
+                    <li><strong>Postupná implementace</strong> - S možností rollback</li>
+                    <li><strong>Kontinuální monitoring</strong> - Sledování KPIs</li>
+                </ul>
+            </div>
+        </section>
+
+        <div class="footer">
+            <p>© 2025 Business Analysis - Questionnaire Consolidation Initiative</p>
+            <p>Dokument vytvořen v rámci BIAN framework pro konsolidaci dotazníkových systémů</p>
+        </div>
+    </div>
+</body>
+</html>
